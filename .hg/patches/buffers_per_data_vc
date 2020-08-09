@@ -1,0 +1,28 @@
+# HG changeset patch
+# Parent  488574602f62e870962bff3b8c8c0c71f864e7a7
+
+diff -r 488574602f62 configs/network/Network.py
+--- a/configs/network/Network.py	Mon Nov 21 19:53:55 2016 -0500
++++ b/configs/network/Network.py	Mon Nov 21 20:09:11 2016 -0500
+@@ -74,7 +74,9 @@
+                         swap""")
+     parser.add_option("--wormhole-buffer-depth", action="store", type="int", default=4,
+                       help="""size of wormhole buffer""")
+-
++    
++    parser.add_option("--buffers-per-data-vc", action="store", type="int", default=4,
++                      help="""size of data buffer""")
+ 
+     parser.add_option("--routing-algorithm", action="store", type="int",
+                       default=0,
+@@ -137,6 +139,10 @@
+         assert(options.network == "garnet2.0")
+         network.intraswap_threshold = options.intraswap_threshold
+         network.vcs_per_vnet = 1 # Use 1 VC.
++    if options.buffers_per_data_vc >= 0: #buffers can't be negative
++    	assert(options.network == "garnet2.0")
++    	network.buffers_per_data_vc = options.buffers_per_data_vc
++
+ 
+     if options.network == "simple":
+         network.setup_buffers()

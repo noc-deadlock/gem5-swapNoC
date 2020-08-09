@@ -1,0 +1,601 @@
+diff -r 220fa4099b9a configs/network/Network.py
+--- a/configs/network/Network.py	Fri Oct 07 23:56:48 2016 -0400
++++ b/configs/network/Network.py	Mon Oct 10 12:29:23 2016 -0400
+@@ -60,6 +60,11 @@
+     parser.add_option("--vcs-per-vnet", action="store", type="int", default=4,
+                       help="""number of virtual channels per virtual network
+                             inside garnet network.""")
++    parser.add_option("--enable-wormhole", action="store", type="int",
++                        default=0, help="""To enable the wormhole routing;
++                            by default its disabled.""")
++    parser.add_option("--wormhole-buffer-depth", action="store", type="int", default=4,
++                      help="""size of wormhole buffer""")
+     parser.add_option("--routing-algorithm", action="store", type="int",
+                       default=0,
+                       help="""routing algorithm in network.
+@@ -104,6 +109,12 @@
+         network.ni_flit_size = options.link_width_bits / 8
+         network.routing_algorithm = options.routing_algorithm
+ 
++    if options.enable_wormhole == 1:
++        assert(options.network == "garnet2.0")
++        network.enable_wormhole = options.enable_wormhole
++        network.wormhole_buffer_depth = options.wormhole_buffer_depth
++        network.vcs_per_vnet = 1 # Use 1 VC.
++
+     if options.network == "simple":
+         network.setup_buffers()
+ 
+diff -r 220fa4099b9a src/mem/ruby/network/garnet2.0/GarnetNetwork.cc
+--- a/src/mem/ruby/network/garnet2.0/GarnetNetwork.cc	Fri Oct 07 23:56:48 2016 -0400
++++ b/src/mem/ruby/network/garnet2.0/GarnetNetwork.cc	Mon Oct 10 12:29:23 2016 -0400
+@@ -62,8 +62,14 @@
+     m_num_rows = p->num_rows;
+     m_ni_flit_size = p->ni_flit_size;
+     m_vcs_per_vnet = p->vcs_per_vnet;
++    m_enable_wormhole = p->enable_wormhole;
+     m_buffers_per_data_vc = p->buffers_per_data_vc;
+     m_buffers_per_ctrl_vc = p->buffers_per_ctrl_vc;
++
++    if(isEnableWormhole()) { 
++        //ctrl vc models wormhole buffer
++        m_buffers_per_ctrl_vc = p->wormhole_buffer_depth;
++    }
+     m_routing_algorithm = p->routing_algorithm;
+ 
+     m_enable_fault_model = p->enable_fault_model;
+diff -r 220fa4099b9a src/mem/ruby/network/garnet2.0/GarnetNetwork.hh
+--- a/src/mem/ruby/network/garnet2.0/GarnetNetwork.hh	Fri Oct 07 23:56:48 2016 -0400
++++ b/src/mem/ruby/network/garnet2.0/GarnetNetwork.hh	Mon Oct 10 12:29:23 2016 -0400
+@@ -67,6 +67,7 @@
+     // for network
+     uint32_t getNiFlitSize() const { return m_ni_flit_size; }
+     uint32_t getVCsPerVnet() const { return m_vcs_per_vnet; }
++    bool isEnableWormhole() const { return m_enable_wormhole; }
+     uint32_t getBuffersPerDataVC() { return m_buffers_per_data_vc; }
+     uint32_t getBuffersPerCtrlVC() { return m_buffers_per_ctrl_vc; }
+     int getRoutingAlgorithm() const { return m_routing_algorithm; }
+@@ -149,6 +150,7 @@
+     int m_num_cols;
+     uint32_t m_ni_flit_size;
+     uint32_t m_vcs_per_vnet;
++    bool m_enable_wormhole;
+     uint32_t m_buffers_per_ctrl_vc;
+     uint32_t m_buffers_per_data_vc;
+     int m_routing_algorithm;
+diff -r 220fa4099b9a src/mem/ruby/network/garnet2.0/GarnetNetwork.py
+--- a/src/mem/ruby/network/garnet2.0/GarnetNetwork.py	Fri Oct 07 23:56:48 2016 -0400
++++ b/src/mem/ruby/network/garnet2.0/GarnetNetwork.py	Mon Oct 10 12:29:23 2016 -0400
+@@ -40,11 +40,13 @@
+     num_rows = Param.Int(0, "number of rows if 2D (mesh/torus/..) topology");
+     ni_flit_size = Param.UInt32(16, "network interface flit size in bytes")
+     vcs_per_vnet = Param.UInt32(4, "virtual channels per virtual network");
++    enable_wormhole = Param.UInt32(0, "To enable the wormhole routing");
+     buffers_per_data_vc = Param.UInt32(4, "buffers per data virtual channel");
+     buffers_per_ctrl_vc = Param.UInt32(1, "buffers per ctrl virtual channel");
+     routing_algorithm = Param.Int(0,
+         "0: Weight-based Table, 1: XY, 2: Custom");
+     enable_fault_model = Param.Bool(False, "enable network fault model");
++    wormhole_buffer_depth = Param.UInt32(4, "size of wormhole buffer");
+     fault_model = Param.FaultModel(NULL, "network fault model");
+ 
+ class GarnetNetworkInterface(ClockedObject):
+@@ -55,6 +57,8 @@
+     id = Param.UInt32("ID in relation to other network interfaces")
+     vcs_per_vnet = Param.UInt32(Parent.vcs_per_vnet,
+                              "virtual channels per virtual network")
++    enable_wormhole = Param.UInt32(Parent.enable_wormhole,
++                             "to enable wormhole routing")
+     virt_nets = Param.UInt32(Parent.number_of_virtual_networks,
+                           "number of virtual networks")
+ 
+@@ -64,5 +68,7 @@
+     cxx_header = "mem/ruby/network/garnet2.0/Router.hh"
+     vcs_per_vnet = Param.UInt32(Parent.vcs_per_vnet,
+                               "virtual channels per virtual network")
++    enable_wormhole = Param.UInt32(Parent.enable_wormhole,
++                              "to enable wormhole routing")
+     virt_nets = Param.UInt32(Parent.number_of_virtual_networks,
+                           "number of virtual networks")
+diff -r 220fa4099b9a src/mem/ruby/network/garnet2.0/InputUnit.cc
+--- a/src/mem/ruby/network/garnet2.0/InputUnit.cc	Fri Oct 07 23:56:48 2016 -0400
++++ b/src/mem/ruby/network/garnet2.0/InputUnit.cc	Mon Oct 10 12:29:23 2016 -0400
+@@ -94,7 +94,8 @@
+         if ((t_flit->get_type() == HEAD_) ||
+             (t_flit->get_type() == HEAD_TAIL_)) {
+ 
+-            assert(m_vcs[vc]->get_state() == IDLE_);
++            if(!(m_router->get_net_ptr()->isEnableWormhole()))
++                assert(m_vcs[vc]->get_state() == IDLE_);
+             set_vc_active(vc, m_router->curCycle());
+ 
+             // Route computation for this vc
+@@ -105,11 +106,27 @@
+             // All flits in this packet will use this output port
+             // The output port field in the flit is updated after it wins SA
+             grant_outport(vc, outport);
++            if(m_router->get_net_ptr()->isEnableWormhole()) {
++                //set output port in this flit as well
++                t_flit->set_outport(outport);
++
++                //set outvc to 0
++                t_flit->set_vc(0);                
++                assert(m_vcs[vc]->get_state() == ACTIVE_);
++            }
+ 
+         } else {
+             assert(m_vcs[vc]->get_state() == ACTIVE_);
+         }
+ 
++       if(m_router->get_net_ptr()->isEnableWormhole()) {
++
++            assert(vc==0);
++
++            // Not full
++            assert(m_vcs[0]->size() < m_router->get_net_ptr()->getBuffersPerCtrlVC());
++        }
++
+ 
+         // Buffer the flit
+         m_vcs[vc]->insertFlit(t_flit);
+diff -r 220fa4099b9a src/mem/ruby/network/garnet2.0/InputUnit.hh
+--- a/src/mem/ruby/network/garnet2.0/InputUnit.hh	Fri Oct 07 23:56:48 2016 -0400
++++ b/src/mem/ruby/network/garnet2.0/InputUnit.hh	Mon Oct 10 12:29:23 2016 -0400
+@@ -59,6 +59,8 @@
+     inline void
+     set_vc_idle(int vc, Cycles curTime)
+     {
++        if(m_router->get_net_ptr()->isEnableWormhole())
++            assert(0);
+         m_vcs[vc]->set_idle(curTime);
+     }
+ 
+@@ -85,6 +87,11 @@
+     {
+         return m_vcs[invc]->get_outport();
+     }
++    
++    inline int
++    get_vc_size(int vc) {
++        return m_vcs[vc]->size();
++    }    
+ 
+     inline int
+     get_outvc(int invc)
+@@ -140,6 +147,13 @@
+         m_credit_link = credit_link;
+     }
+ 
++//    inline int
++//    get_remaining_capacity(int invc)
++//    {
++//        flitBuffer* tmp_fB = m_vcs[invc]->accessToBuffer();
++//        return (tmp_fB->bufferSizeLeft());
++//    }
++
+     double get_buf_read_activity(unsigned int vnet) const
+     { return m_num_buffer_reads[vnet]; }
+     double get_buf_write_activity(unsigned int vnet) const
+diff -r 220fa4099b9a src/mem/ruby/network/garnet2.0/NetworkInterface.cc
+--- a/src/mem/ruby/network/garnet2.0/NetworkInterface.cc	Fri Oct 07 23:56:48 2016 -0400
++++ b/src/mem/ruby/network/garnet2.0/NetworkInterface.cc	Mon Oct 10 12:29:23 2016 -0400
+@@ -172,7 +172,10 @@
+         flit *t_flit = inNetLink->consumeLink();
+         bool free_signal = false;
+         if (t_flit->get_type() == TAIL_ || t_flit->get_type() == HEAD_TAIL_) {
+-            free_signal = true;
++            if(!(m_net_ptr->isEnableWormhole()))
++                free_signal = true;
++            else 
++                free_signal = false; // don't free the VC
+ 
+             // enqueue into the protocol buffers
+             outNode_ptr[t_flit->get_vnet()]->enqueue(
+@@ -216,6 +219,9 @@
+         Credit *t_credit = (Credit*) inCreditLink->consumeLink();
+         m_out_vc_state[t_credit->get_vc()]->increment_credit();
+         if (t_credit->is_free_signal()) {
++            if (m_net_ptr->isEnableWormhole()) {
++                assert(0);
++            }
+             m_out_vc_state[t_credit->get_vc()]->setState(IDLE_, curCycle());
+         }
+         delete t_credit;
+@@ -312,6 +318,8 @@
+         if (m_vc_allocator[vnet] == m_vc_per_vnet)
+             m_vc_allocator[vnet] = 0;
+ 
++        if(m_net_ptr->isEnableWormhole())
++            return ((vnet*m_vc_per_vnet) + delta);
+         if (m_out_vc_state[(vnet*m_vc_per_vnet) + delta]->isInState(
+                     IDLE_, curCycle())) {
+             return ((vnet*m_vc_per_vnet) + delta);
+diff -r 220fa4099b9a src/mem/ruby/network/garnet2.0/NetworkLink.cc
+--- a/src/mem/ruby/network/garnet2.0/NetworkLink.cc	Fri Oct 07 23:56:48 2016 -0400
++++ b/src/mem/ruby/network/garnet2.0/NetworkLink.cc	Mon Oct 10 12:29:23 2016 -0400
+@@ -32,7 +32,7 @@
+ 
+ 
+ #include "mem/ruby/network/garnet2.0/NetworkLink.hh"
+-
++#include "debug/RubyNetwork.hh"
+ #include "mem/ruby/network/garnet2.0/CreditLink.hh"
+ 
+ NetworkLink::NetworkLink(const Params *p)
+diff -r 220fa4099b9a src/mem/ruby/network/garnet2.0/OutVcState.cc
+--- a/src/mem/ruby/network/garnet2.0/OutVcState.cc	Fri Oct 07 23:56:48 2016 -0400
++++ b/src/mem/ruby/network/garnet2.0/OutVcState.cc	Mon Oct 10 12:29:23 2016 -0400
+@@ -40,7 +40,8 @@
+ {
+     m_id = id;
+     m_vc_state = IDLE_;
+-
++    if(network_ptr->isEnableWormhole())
++        m_vc_state = ACTIVE_;
+     if (network_ptr->get_vnet_type(id) == DATA_VNET_)
+         m_max_credit_count = network_ptr->getBuffersPerDataVC();
+     else
+diff -r 220fa4099b9a src/mem/ruby/network/garnet2.0/OutVcState.hh
+--- a/src/mem/ruby/network/garnet2.0/OutVcState.hh	Fri Oct 07 23:56:48 2016 -0400
++++ b/src/mem/ruby/network/garnet2.0/OutVcState.hh	Mon Oct 10 12:29:23 2016 -0400
+@@ -44,6 +44,7 @@
+ 
+     int get_credit_count()          { return m_credit_count; }
+     inline bool has_credit()       { return (m_credit_count > 0); }
++    int get_max_credit_count()      { return m_max_credit_count; }
+     void increment_credit();
+     void decrement_credit();
+ 
+diff -r 220fa4099b9a src/mem/ruby/network/garnet2.0/Router.cc
+--- a/src/mem/ruby/network/garnet2.0/Router.cc	Fri Oct 07 23:56:48 2016 -0400
++++ b/src/mem/ruby/network/garnet2.0/Router.cc	Mon Oct 10 12:29:23 2016 -0400
+@@ -100,6 +100,12 @@
+     for (int outport = 0; outport < m_output_unit.size(); outport++) {
+         m_output_unit[outport]->wakeup();
+     }
++    
++    //mparasar: 'm_network_ptr' is a pointer to GarnetNetwork.hh
++    //which is a private member of class 'Router'
++    if(m_network_ptr->isEnableWormhole()) {
++        //Push your Wormhole code here...
++    }
+ 
+     // Switch Allocation
+     m_sw_alloc->wakeup();
+diff -r 220fa4099b9a src/mem/ruby/network/garnet2.0/SwitchAllocator.cc
+--- a/src/mem/ruby/network/garnet2.0/SwitchAllocator.cc	Fri Oct 07 23:56:48 2016 -0400
++++ b/src/mem/ruby/network/garnet2.0/SwitchAllocator.cc	Mon Oct 10 12:29:23 2016 -0400
+@@ -114,41 +114,71 @@
+     // Select a VC from each input in a round robin manner
+     // Independent arbiter at each input port
+     for (int inport = 0; inport < m_num_inports; inport++) {
+-        int invc = m_round_robin_invc[inport];
+ 
+-        // Select next round robin vc candidate within valid vnet
+-        int next_round_robin_invc = invc;
+-        next_round_robin_invc++;
+-        if (next_round_robin_invc >= m_num_vcs)
+-            next_round_robin_invc = 0;
+-        m_round_robin_invc[inport] = next_round_robin_invc;
++        if (!m_router->get_net_ptr()->isEnableWormhole()) {
++            int invc = m_round_robin_invc[inport];
+ 
+-        for (int invc_iter = 0; invc_iter < m_num_vcs; invc_iter++) {
++            // Select next round robin vc candidate within valid vnet
++            int next_round_robin_invc = invc;
++            next_round_robin_invc++;
++            if (next_round_robin_invc >= m_num_vcs)
++                next_round_robin_invc = 0;
++            m_round_robin_invc[inport] = next_round_robin_invc;
+ 
+-            if (m_input_unit[inport]->need_stage(invc, SA_,
+-                m_router->curCycle())) {
++            for (int invc_iter = 0; invc_iter < m_num_vcs; invc_iter++) {
+ 
+-                // This flit is in SA stage
++                if (m_input_unit[inport]->need_stage(invc, SA_,
++                            m_router->curCycle())) {
+ 
+-                int  outport = m_input_unit[inport]->get_outport(invc);
+-                int  outvc   = m_input_unit[inport]->get_outvc(invc);
++                    // This flit is in SA stage
+ 
+-                // check if the flit in this InputVC is allowed to be sent
+-                // send_allowed conditions described in that function.
+-                bool make_request =
+-                    send_allowed(inport, invc, outport, outvc);
++                    int  outport = m_input_unit[inport]->get_outport(invc);
++                    int  outvc   = m_input_unit[inport]->get_outvc(invc);
+ 
+-                if (make_request) {
+-                    m_input_arbiter_activity++;
+-                    m_port_requests[outport][inport] = true;
+-                    m_vc_winners[outport][inport]= invc;
+-                    break; // got one vc winner for this port
++                    // check if the flit in this InputVC is allowed to be sent
++                    // send_allowed conditions described in that function.
++                    bool make_request =
++                        send_allowed(inport, invc, outport, outvc);
++
++                    if (make_request) {
++                        m_input_arbiter_activity++;
++                        m_port_requests[outport][inport] = true;
++                        m_vc_winners[outport][inport]= invc;
++                        break; // got one vc winner for this port
++                    }
++                }
++
++                invc++;
++                if (invc >= m_num_vcs)
++                    invc = 0;
++            }
++        } else {
++
++            int invc = 0; // wormhole buffer
++
++            if (m_input_unit[inport]->isReady(invc, m_router->curCycle()) == true) {		
++                flit *t_flit = m_input_unit[inport]->peekTopFlit(invc);
++
++                if (m_input_unit[inport]->need_stage(0, SA_,
++                            m_router->curCycle())) {
++
++                    // This flit is in SA stage
++                    int outport = t_flit->get_outport();
++                    int outvc = t_flit->get_vc();
++                    assert(outvc==0);    
++                    // check if the flit in this InputVC is allowed to be sent
++                    // send_allowed conditions described in that function.
++                    bool make_request =
++                        send_allowed(inport, invc, outport, outvc);
++
++                    if (make_request) {
++                        m_input_arbiter_activity++;
++                        m_port_requests[outport][inport] = true;
++                        m_vc_winners[outport][inport]= invc;
++                        break; // got one vc winner for this port
++                    }
+                 }
+             }
+-
+-            invc++;
+-            if (invc >= m_num_vcs)
+-                invc = 0;
+         }
+     }
+ }
+@@ -186,79 +216,133 @@
+             // inport has a request this cycle for outport
+             if (m_port_requests[outport][inport]) {
+ 
+-                // grant this outport to this inport
+-                int invc = m_vc_winners[outport][inport];
++                if (!m_router->get_net_ptr()->isEnableWormhole()) {
++                    // grant this outport to this inport
++                    int invc = m_vc_winners[outport][inport];
+ 
+-                int outvc = m_input_unit[inport]->get_outvc(invc);
+-                if (outvc == -1) {
+-                    // VC Allocation - select any free VC from outport
+-                    outvc = vc_allocate(outport, inport, invc);
++                    int outvc = m_input_unit[inport]->get_outvc(invc);
++                    if (outvc == -1) {
++                        // VC Allocation - select any free VC from outport
++                        outvc = vc_allocate(outport, inport, invc);
++                    }
++
++                    // remove flit from Input VC
++                    flit *t_flit = m_input_unit[inport]->getTopFlit(invc);
++
++                    DPRINTF(RubyNetwork, "SwitchAllocator at Router %d "
++                            "granted outvc %d at outport %d "
++                            "to invc %d at inport %d to flit %s at "
++                            "time: %lld\n",
++                            m_router->get_id(), outvc,
++                            m_router->getPortDirectionName(
++                                m_output_unit[outport]->get_direction()),
++                            invc,
++                            m_router->getPortDirectionName(
++                                m_input_unit[inport]->get_direction()),
++                            *t_flit,
++                            m_router->curCycle());
++
++
++                    // Update outport field in the flit since this is
++                    // used by CrossbarSwitch code to send it out of
++                    // correct outport.
++                    // Note: post route compute in InputUnit,
++                    // outport is updated in VC, but not in flit
++                    t_flit->set_outport(outport);
++
++                    // set outvc (i.e., invc for next hop) in flit
++                    // (This was updated in VC by vc_allocate, but not in flit)
++                    t_flit->set_vc(outvc);
++
++                    // decrement credit in outvc
++                    m_output_unit[outport]->decrement_credit(outvc);
++
++                    // flit ready for Switch Traversal
++                    t_flit->advance_stage(ST_, m_router->curCycle());
++                    m_router->grant_switch(inport, t_flit);
++                    m_output_arbiter_activity++;
++
++                    if ((t_flit->get_type() == TAIL_) ||
++                            t_flit->get_type() == HEAD_TAIL_) {
++
++                        // This Input VC should now be empty
++                        assert(!(m_input_unit[inport]->isReady(invc,
++                                        m_router->curCycle())));
++
++                        // Free this VC
++                        m_input_unit[inport]->set_vc_idle(invc,
++                                m_router->curCycle());
++
++                        // Send a credit back
++                        // along with the information that this VC is now idle
++                        m_input_unit[inport]->increment_credit(invc, true,
++                                m_router->curCycle());
++                    } else {
++                        // Send a credit back
++                        // but do not indicate that the VC is idle
++                        m_input_unit[inport]->increment_credit(invc, false,
++                                m_router->curCycle());
++                    }
++
++                    // remove this request
++                    m_port_requests[outport][inport] = false;
++
++                    break; // got a input winner for this outport
++                } else {
++
++                    // Wormhole
++
++                    if (m_input_unit[inport]->isReady(0, m_router->curCycle()) == true) {
++
++                        flit *t_flit = m_input_unit[inport]->getTopFlit(0);  
++
++                        // grant this outport to this inport
++                        int invc = m_vc_winners[outport][inport];
++                        assert(invc == 0);
++
++                        int outvc = t_flit->get_vc();
++                        assert(outvc == 0);
++
++                        if (outvc == -1) {
++                            assert(0);
++                            // VC Allocation - select any free VC from outport
++                            outvc = vc_allocate(outport, inport, invc);
++                        }
++
++                        DPRINTF(RubyNetwork, "SwitchAllocator at Router %d "
++                                "granted outvc %d at outport %d "
++                                "to invc %d at inport %d to flit %s at "
++                                "time: %lld\n",
++                                m_router->get_id(), outvc,
++                                m_router->getPortDirectionName(
++                                    m_output_unit[outport]->get_direction()),
++                                invc,
++                                m_router->getPortDirectionName(
++                                    m_input_unit[inport]->get_direction()),
++                                *t_flit,
++                                m_router->curCycle());
++
++
++                        // decrement credit in outvc
++                        m_output_unit[outport]->decrement_credit(outvc);
++
++                        // flit ready for Switch Traversal
++                        t_flit->advance_stage(ST_, m_router->curCycle());
++                        m_router->grant_switch(inport, t_flit);
++                        m_output_arbiter_activity++;
++
++                        // Send credit back
++                        // But do not free the VC (wormhole)
++                        m_input_unit[inport]->increment_credit(invc, false,
++                                m_router->curCycle());
++
++                        // remove this request
++                        m_port_requests[outport][inport] = false;
++
++                        break; // got a input winner for this outport
++                    }
+                 }
+-
+-                // remove flit from Input VC
+-                flit *t_flit = m_input_unit[inport]->getTopFlit(invc);
+-
+-                DPRINTF(RubyNetwork, "SwitchAllocator at Router %d "
+-                                     "granted outvc %d at outport %d "
+-                                     "to invc %d at inport %d to flit %s at "
+-                                     "time: %lld\n",
+-                        m_router->get_id(), outvc,
+-                        m_router->getPortDirectionName(
+-                            m_output_unit[outport]->get_direction()),
+-                        invc,
+-                        m_router->getPortDirectionName(
+-                            m_input_unit[inport]->get_direction()),
+-                            *t_flit,
+-                        m_router->curCycle());
+-
+-
+-                // Update outport field in the flit since this is
+-                // used by CrossbarSwitch code to send it out of
+-                // correct outport.
+-                // Note: post route compute in InputUnit,
+-                // outport is updated in VC, but not in flit
+-                t_flit->set_outport(outport);
+-
+-                // set outvc (i.e., invc for next hop) in flit
+-                // (This was updated in VC by vc_allocate, but not in flit)
+-                t_flit->set_vc(outvc);
+-
+-                // decrement credit in outvc
+-                m_output_unit[outport]->decrement_credit(outvc);
+-
+-                // flit ready for Switch Traversal
+-                t_flit->advance_stage(ST_, m_router->curCycle());
+-                m_router->grant_switch(inport, t_flit);
+-                m_output_arbiter_activity++;
+-
+-                if ((t_flit->get_type() == TAIL_) ||
+-                    t_flit->get_type() == HEAD_TAIL_) {
+-
+-                    // This Input VC should now be empty
+-                    assert(!(m_input_unit[inport]->isReady(invc,
+-                        m_router->curCycle())));
+-
+-                    // Free this VC
+-                    m_input_unit[inport]->set_vc_idle(invc,
+-                        m_router->curCycle());
+-
+-                    // Send a credit back
+-                    // along with the information that this VC is now idle
+-                    m_input_unit[inport]->increment_credit(invc, true,
+-                        m_router->curCycle());
+-                } else {
+-                    // Send a credit back
+-                    // but do not indicate that the VC is idle
+-                    m_input_unit[inport]->increment_credit(invc, false,
+-                        m_router->curCycle());
+-                }
+-
+-                // remove this request
+-                m_port_requests[outport][inport] = false;
+-
+-                break; // got a input winner for this outport
+             }
+-
+             inport++;
+             if (inport >= m_num_inports)
+                 inport = 0;
+diff -r 220fa4099b9a src/mem/ruby/network/garnet2.0/VirtualChannel.hh
+--- a/src/mem/ruby/network/garnet2.0/VirtualChannel.hh	Fri Oct 07 23:56:48 2016 -0400
++++ b/src/mem/ruby/network/garnet2.0/VirtualChannel.hh	Mon Oct 10 12:29:23 2016 -0400
+@@ -81,6 +81,12 @@
+         return m_input_buffer->peekTopFlit();
+     }
+ 
++    inline int
++    size()
++    {
++        return m_input_buffer->size();
++    }
++
+     inline flit*
+     getTopFlit()
+     {
+diff -r 220fa4099b9a src/mem/ruby/network/garnet2.0/flitBuffer.hh
+--- a/src/mem/ruby/network/garnet2.0/flitBuffer.hh	Fri Oct 07 23:56:48 2016 -0400
++++ b/src/mem/ruby/network/garnet2.0/flitBuffer.hh	Mon Oct 10 12:29:23 2016 -0400
+@@ -68,6 +68,12 @@
+         return m_buffer.front();
+     }
+ 
++    int
++    size()
++    {
++        return m_buffer.size();
++    }
++
+     void
+     insert(flit *flt)
+     {

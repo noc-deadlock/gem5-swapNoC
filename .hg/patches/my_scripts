@@ -1,0 +1,20 @@
+diff -r a72c1895e3de my_scripts/build_Garnet_standalone.sh
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/my_scripts/build_Garnet_standalone.sh	Mon Oct 10 12:39:32 2016 -0400
+@@ -0,0 +1,3 @@
++#!/bin/tcsh
++source my_scripts/set_env.cshrc
++python `which scons` -j 24 build/Garnet_standalone/gem5.debug
+diff -r a72c1895e3de my_scripts/run_example.sh
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/my_scripts/run_example.sh	Mon Oct 10 12:39:32 2016 -0400
+@@ -0,0 +1,1 @@
++./build/Garnet_standalone/gem5.debug configs/example/garnet_synth_traffic.py --topology=Mesh_XY --num-cpus=16 --num-dirs=16 --mesh-rows=4 --network=garnet2.0 --inj-vnet=0
+diff -r a72c1895e3de my_scripts/set_env.cshrc
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/my_scripts/set_env.cshrc	Mon Oct 10 12:39:32 2016 -0400
+@@ -0,0 +1,4 @@
++# gem5
++source /tools/linsoft/gcc-4.8.5/cshrc.meta
++source /tools/linsoft/python-2.7.2/cshrc.meta
++source /tools/linsoft/swig-3.0.7/cshrc.meta

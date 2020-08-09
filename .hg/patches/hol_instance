@@ -1,0 +1,329 @@
+# HG changeset patch
+# Parent  c749a039049376bce03fb94cec2db17c0e6e22af
+
+diff -r c749a0390493 configs/example/garnet_synth_traffic.py
+--- a/configs/example/garnet_synth_traffic.py	Sun Mar 19 02:23:32 2017 -0400
++++ b/configs/example/garnet_synth_traffic.py	Sun May 07 00:04:01 2017 -0400
+@@ -53,7 +53,7 @@
+                             'tornado_random_30', 'tornado_random_40', \
+                             'tornado_random_50', 'tornado_random_60', \
+                             'tornado_random_70', 'tornado_random_80', \
+-                            'tornado_random_90'])
++                            'tornado_random_90', 'edge_50'])
+ 
+ parser.add_option("-i", "--injectionrate", type="float", default=0.1,
+                   metavar="I",
+diff -r c749a0390493 src/cpu/testers/garnet_synthetic_traffic/GarnetSyntheticTraffic.cc
+--- a/src/cpu/testers/garnet_synthetic_traffic/GarnetSyntheticTraffic.cc	Sun Mar 19 02:23:32 2017 -0400
++++ b/src/cpu/testers/garnet_synthetic_traffic/GarnetSyntheticTraffic.cc	Sun May 07 00:04:01 2017 -0400
+@@ -338,6 +338,17 @@
+             dest_y = src_y;
+             destination = dest_y*radix + dest_x;
+         }
++    } else if (traffic == EDGE_50) {
++        int rand = random_mt.random(0,100); //generate a random number
++        if (rand < 50) {
++            // random
++            destination =  random_mt.random<unsigned>(0, num_destinations - 1);
++        } else {
++            // edge
++            dest_x = radix - 1;
++            dest_y = src_y;
++            destination = dest_y*radix + dest_x;
++        }
+     }
+ 
+     else {
+@@ -443,6 +454,7 @@
+     trafficStringToEnum["tornado_random_70"] = TORNADO_RANDOM_70;
+     trafficStringToEnum["tornado_random_80"] = TORNADO_RANDOM_80;
+     trafficStringToEnum["tornado_random_90"] = TORNADO_RANDOM_90;
++    trafficStringToEnum["edge_50"] = EDGE_50;
+ }
+ 
+ void
+diff -r c749a0390493 src/cpu/testers/garnet_synthetic_traffic/GarnetSyntheticTraffic.hh
+--- a/src/cpu/testers/garnet_synthetic_traffic/GarnetSyntheticTraffic.hh	Sun Mar 19 02:23:32 2017 -0400
++++ b/src/cpu/testers/garnet_synthetic_traffic/GarnetSyntheticTraffic.hh	Sun May 07 00:04:01 2017 -0400
+@@ -59,6 +59,7 @@
+                   TORNADO_RANDOM_70 = 14,
+                   TORNADO_RANDOM_80 = 15,
+                   TORNADO_RANDOM_90 = 16,
++                  EDGE_50 = 17,
+                   NUM_TRAFFIC_PATTERNS_};
+ 
+ class Packet;
+diff -r c749a0390493 src/mem/ruby/network/garnet2.0/GarnetNetwork.cc
+--- a/src/mem/ruby/network/garnet2.0/GarnetNetwork.cc	Sun Mar 19 02:23:32 2017 -0400
++++ b/src/mem/ruby/network/garnet2.0/GarnetNetwork.cc	Sun May 07 00:04:01 2017 -0400
+@@ -80,6 +80,16 @@
+         cout << "intraRouterSwap is enabled" << endl;
+         m_buffers_per_ctrl_vc = p->wormhole_buffer_depth;
+     }
++
++//    if (isEnableWormhole() || isEnableIntraswap()) {
++    // intializing my stat variable
++    m_hol_total = 0;
++    m_hol_blocked = 0;
++    m_hol_avoidable = 0;
++    m_no_hol = 0;
++
++//    }
++
+     m_routing_algorithm = p->routing_algorithm;
+ 
+     m_enable_fault_model = p->enable_fault_model;
+@@ -297,6 +307,27 @@
+         .flags(Stats::oneline)
+         ;
+ 
++    // My Stats
++    m_hol_total
++            .name(name() + ".total_hol_instances_encountered")
++            .flags(Stats::oneline)
++            ;
++
++    m_hol_blocked
++            .name(name() + ".hol_instances_blocked")
++            .flags(Stats::oneline)
++            ;
++
++    m_hol_avoidable
++            .name(name() + ".hol_instances_avoidable_using_swap")
++            .flags(Stats::oneline)
++            ;
++
++    m_no_hol
++            .name(name() + ".total_instances_without_hol")
++            .flags(Stats::oneline)
++            ;
++
+     for (int i = 0; i < m_virtual_networks; i++) {
+         m_packets_received.subname(i, csprintf("vnet-%i", i));
+         m_packets_injected.subname(i, csprintf("vnet-%i", i));
+diff -r c749a0390493 src/mem/ruby/network/garnet2.0/GarnetNetwork.hh
+--- a/src/mem/ruby/network/garnet2.0/GarnetNetwork.hh	Sun Mar 19 02:23:32 2017 -0400
++++ b/src/mem/ruby/network/garnet2.0/GarnetNetwork.hh	Sun May 07 00:04:01 2017 -0400
+@@ -146,6 +146,13 @@
+         m_total_hops += hops;
+     }
+ 
++    // My Statistical variables
++    // -----------------------------
++    Stats::Scalar m_hol_total;
++    Stats::Scalar m_hol_blocked;
++    Stats::Scalar m_hol_avoidable;
++    Stats::Scalar m_no_hol;
++    // -----------------------------
+   protected:
+     // Configuration
+     int m_num_rows;
+diff -r c749a0390493 src/mem/ruby/network/garnet2.0/InputUnit.cc
+--- a/src/mem/ruby/network/garnet2.0/InputUnit.cc	Sun Mar 19 02:23:32 2017 -0400
++++ b/src/mem/ruby/network/garnet2.0/InputUnit.cc	Sun May 07 00:04:01 2017 -0400
+@@ -138,25 +138,18 @@
+         m_num_buffer_reads[vnet]++;
+         // do the swap here...
+         if(m_router->get_net_ptr()->isEnableIntraswap()) {
+-            // cout << "[ InputUnit.cc: " <<__LINE__ <<"] checking if m_vcs[0] is Full?" << endl;
+-            // cout << "[ InputUnit.cc: " <<__LINE__ <<"] size: " << m_vcs[0]->size() << endl;
+-            // cout << "[ InputUnit.cc: " <<__LINE__ <<"] size-left: " << m_vcs[0]->sizeLeft() << endl;
+             // if (m_vcs[0]->isThreshold(m_router->get_net_ptr()->threshold())==true) {
+             if (m_vcs[0]->isThreshold(m_router->get_net_ptr()->threshold())==true) {
+                 // DO SWAPPING HERE
+-                // cout << "[ InputUnit.cc: " <<__LINE__ <<"] m_vcs[0] is Full => Doing Swap here" << endl;
+-                // assert(0);
+                 // m_vcs[0]->swap();
+                 // DO intelligent swap; instead of swapping it with the last flit
+                 // swap HoL with the next flit that has differnt outport then HoL
+                 m_vcs[0]->intel_swap();
+             } else {
+-                // cout << "[ InputUnit.cc: " <<__LINE__ <<"] checking if m_vcs[0] is not Full" << endl;
++                // nothing here...
+             }   
+         } else {
+-            // cout << "[ InputUnit.cc: " <<__LINE__ <<"] checking if m_vcs[0] is Full?" << endl;
+-            // cout << "[ InputUnit.cc: " <<__LINE__ <<"] size: " << m_vcs[0]->size() << endl;
+-            // cout << "[ InputUnit.cc: " <<__LINE__ <<"] size-left: " << m_vcs[0]->sizeLeft() << endl;           
++            // nothing here...
+         }     
+ 
+         Cycles pipe_stages = m_router->get_pipe_stages();
+diff -r c749a0390493 src/mem/ruby/network/garnet2.0/InputUnit.hh
+--- a/src/mem/ruby/network/garnet2.0/InputUnit.hh	Sun Mar 19 02:23:32 2017 -0400
++++ b/src/mem/ruby/network/garnet2.0/InputUnit.hh	Sun May 07 00:04:01 2017 -0400
+@@ -145,6 +145,12 @@
+         return m_vcs[invc]->isReady(curTime);
+     }
+ 
++    bool
++    scan_queue(int vc)
++    {
++        return m_vcs[vc]->scan_queue();
++    }
++
+     flitBuffer* getCreditQueue() { return creditQueue; }
+ 
+     inline void
+diff -r c749a0390493 src/mem/ruby/network/garnet2.0/OutputUnit.cc
+--- a/src/mem/ruby/network/garnet2.0/OutputUnit.cc	Sun Mar 19 02:23:32 2017 -0400
++++ b/src/mem/ruby/network/garnet2.0/OutputUnit.cc	Sun May 07 00:04:01 2017 -0400
+@@ -93,6 +93,7 @@
+ }
+ 
+ 
++
+ // Check if the output port (i.e., input port at next router) has free VCs.
+ bool
+ OutputUnit::has_free_vc(int vnet)
+diff -r c749a0390493 src/mem/ruby/network/garnet2.0/RoutingUnit.cc
+--- a/src/mem/ruby/network/garnet2.0/RoutingUnit.cc	Sun Mar 19 02:23:32 2017 -0400
++++ b/src/mem/ruby/network/garnet2.0/RoutingUnit.cc	Sun May 07 00:04:01 2017 -0400
+@@ -181,6 +181,7 @@
+                               int inport,
+                               PortDirection inport_dirn)
+ {
++
+     PortDirection outport_dirn = "Unknown";
+ 
+     int M5_VAR_USED num_rows = m_router->get_net_ptr()->getNumRows();
+@@ -239,6 +240,7 @@
+ {
+     PortDirection outport_dirn = "Unknown";
+ 
++
+     int M5_VAR_USED num_rows = m_router->get_net_ptr()->getNumRows();
+     int num_cols = m_router->get_net_ptr()->getNumCols();
+     assert(num_rows > 0 && num_cols > 0);
+diff -r c749a0390493 src/mem/ruby/network/garnet2.0/SwitchAllocator.cc
+--- a/src/mem/ruby/network/garnet2.0/SwitchAllocator.cc	Sun Mar 19 02:23:32 2017 -0400
++++ b/src/mem/ruby/network/garnet2.0/SwitchAllocator.cc	Sun May 07 00:04:01 2017 -0400
+@@ -39,6 +39,8 @@
+ #include "mem/ruby/network/garnet2.0/OutputUnit.hh"
+ #include "mem/ruby/network/garnet2.0/Router.hh"
+ 
++using namespace std;
++
+ SwitchAllocator::SwitchAllocator(Router *router)
+     : Consumer(router)
+ {
+@@ -134,7 +136,7 @@
+                     // This flit is in SA stage
+ 
+                     int  outport = m_input_unit[inport]->get_outport(invc);
+-                    int  outvc   = m_input_unit[inport]->get_outvc(invc);
++                    int  outvc   = m_input_unit[inport]->get_outvc(invc); // this gives the out-vc id within the vnet-id for the inport.
+ 
+                     // check if the flit in this InputVC is allowed to be sent
+                     // send_allowed conditions described in that function.
+@@ -153,14 +155,14 @@
+                 if (invc >= m_num_vcs)
+                     invc = 0;
+             }
+-        } else {
++        } else { // check for HoL instance in this block
+ 
+             int invc = 0; // wormhole buffer
+-
++            // Don't need round robin becaue there's only one 'queue' per input port.
+             if (m_input_unit[inport]->isReady(invc, m_router->curCycle()) == true) {		
+                 flit *t_flit = m_input_unit[inport]->peekTopFlit(invc);
+ 
+-                if (m_input_unit[inport]->need_stage(0, SA_,
++                if (m_input_unit[inport]->need_stage(invc, SA_,
+                             m_router->curCycle())) {
+ 
+                     // This flit is in SA stage
+@@ -377,7 +379,6 @@
+     bool has_credit = false;
+ 
+     if (!has_outvc) {
+-
+         // needs outvc
+         // this is only true for HEAD and HEAD_TAIL flits.
+         if(m_router->get_net_ptr()->isEnableWormhole())
+@@ -392,6 +393,23 @@
+         }
+     } else {
+         has_credit = m_output_unit[outport]->has_credit(outvc);
++
++        if(m_router->get_net_ptr()->isEnableWormhole() ||
++           m_router->get_net_ptr()->isEnableIntraswap()){
++
++            if(has_credit == false){
++                // you need to scan your own queue not the 'input queue of destination router'
++                m_router->get_net_ptr()->m_hol_total++;
++                if (m_input_unit[inport]->scan_queue(invc)){
++                    m_router->get_net_ptr()->m_hol_avoidable++;
++                } else {
++                    m_router->get_net_ptr()->m_hol_blocked++;
++                }
++            } else {
++                m_router->get_net_ptr()->m_no_hol++;
++//                cout << "Remaining credit count is: "<< m_output_unit[outport]->get_credit_count(outvc) << endl;
++            }
++        }
+     }
+ 
+     // cannot send if no outvc or no credit.
+diff -r c749a0390493 src/mem/ruby/network/garnet2.0/VirtualChannel.hh
+--- a/src/mem/ruby/network/garnet2.0/VirtualChannel.hh	Sun Mar 19 02:23:32 2017 -0400
++++ b/src/mem/ruby/network/garnet2.0/VirtualChannel.hh	Sun May 07 00:04:01 2017 -0400
+@@ -92,6 +92,12 @@
+         m_input_buffer->intel_swap();
+     }
+ 
++    bool
++    scan_queue()
++    {
++        return m_input_buffer->scan_queue();
++    }
++
+     inline void
+     set_state(VC_state_type m_state, Cycles curTime)
+     {
+diff -r c749a0390493 src/mem/ruby/network/garnet2.0/flitBuffer.cc
+--- a/src/mem/ruby/network/garnet2.0/flitBuffer.cc	Sun Mar 19 02:23:32 2017 -0400
++++ b/src/mem/ruby/network/garnet2.0/flitBuffer.cc	Sun May 07 00:04:01 2017 -0400
+@@ -85,7 +85,6 @@
+             // cout << "m_buffer.front()->get_outport(): "  << m_buffer.front()->get_outport() << endl;
+             // assert(0);
+             return; // you have done the swapping.. Just return.            
+-            //break;
+         }
+     }
+     // If control comes to this place it means that we have parsed the whole buffer and there is no flit
+@@ -98,6 +97,22 @@
+ }
+ 
+ bool
++flitBuffer::scan_queue()
++{
++    // Parse through the buffer and return true
++    // if there's any packet whoes outport is
++    // different than the HoL.
++    for (std::vector<flit *>::iterator i = m_buffer.begin(); i != m_buffer.end(); ++i) {
++        if((*i)->get_outport() != m_buffer.front()->get_outport()) {
++            return (true);
++        }
++    }
++    // if control comes here.. it hasn't find any packet which
++    // has outport different than HoL.
++    return (false);
++}
++
++bool
+ flitBuffer::isReady(Cycles curTime)
+ {
+     if (m_buffer.size() != 0 ) {
+diff -r c749a0390493 src/mem/ruby/network/garnet2.0/flitBuffer.hh
+--- a/src/mem/ruby/network/garnet2.0/flitBuffer.hh	Sun Mar 19 02:23:32 2017 -0400
++++ b/src/mem/ruby/network/garnet2.0/flitBuffer.hh	Sun May 07 00:04:01 2017 -0400
+@@ -55,6 +55,7 @@
+     void setMaxSize(int maximum);
+     void swap();
+     void intel_swap();  
++    bool scan_queue();
+ 
+     int bufferSizeLeft();
+ 

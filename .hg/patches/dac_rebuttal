@@ -1,0 +1,317 @@
+diff -r 77ab02bdae9e -r 7f2a81527f85 src/mem/ruby/network/garnet2.0/GarnetNetwork.cc
+--- a/src/mem/ruby/network/garnet2.0/GarnetNetwork.cc	Tue Nov 22 03:17:13 2016 -0500
++++ b/src/mem/ruby/network/garnet2.0/GarnetNetwork.cc	Fri Mar 17 18:46:01 2017 -0400
+@@ -79,6 +79,9 @@
+         //something interesting.
+         cout << "intraRouterSwap is enabled" << endl;
+         m_buffers_per_ctrl_vc = p->wormhole_buffer_depth;
++        // This is the constructor.. initialize your
++        m_num_swap_done = 0;  // init
++        m_num_hol = 0;  // init
+     }
+     m_routing_algorithm = p->routing_algorithm;
+ 
+@@ -363,6 +366,14 @@
+         m_flit_queueing_latency.subname(i, csprintf("vnet-%i", i));
+     }
+ 
++    m_num_swap_done
++        .name(name() + ".number_of_swap_done")
++        .flags(Stats::oneline);
++
++    m_num_hol
++        .name(name() + ".number_of_head_of_line_Blocking")
++        .flags(Stats::oneline);
++
+     m_avg_flit_vnet_latency
+         .name(name() + ".average_flit_vnet_latency")
+         .flags(Stats::oneline);
+diff -r 77ab02bdae9e -r 7f2a81527f85 src/mem/ruby/network/garnet2.0/GarnetNetwork.hh
+--- a/src/mem/ruby/network/garnet2.0/GarnetNetwork.hh	Tue Nov 22 03:17:13 2016 -0500
++++ b/src/mem/ruby/network/garnet2.0/GarnetNetwork.hh	Fri Mar 17 18:46:01 2017 -0400
+@@ -146,6 +146,8 @@
+         m_total_hops += hops;
+     }
+ 
++    Stats::Scalar m_num_swap_done; // so that it can be directly modified by network object 
++    Stats::Scalar m_num_hol; // so that it can be directly modified by network object 
+   protected:
+     // Configuration
+     int m_num_rows;
+@@ -174,7 +176,7 @@
+ 
+     Stats::Vector m_flits_received;
+     Stats::Vector m_flits_injected;
+-    Stats::Vector m_flit_network_latency;
++    Stats::Vector m_flit_network_latency; // per virtual network basis
+     Stats::Vector m_flit_queueing_latency;
+ 
+     Stats::Formula m_avg_flit_vnet_latency;
+diff -r 77ab02bdae9e -r 7f2a81527f85 src/mem/ruby/network/garnet2.0/InputUnit.cc
+--- a/src/mem/ruby/network/garnet2.0/InputUnit.cc	Tue Nov 22 03:17:13 2016 -0500
++++ b/src/mem/ruby/network/garnet2.0/InputUnit.cc	Fri Mar 17 18:46:01 2017 -0400
+@@ -130,33 +130,37 @@
+ 
+         // Buffer the flit
+         m_vcs[vc]->insertFlit(t_flit);
+-
+         int vnet = vc/m_vc_per_vnet;
+         // number of writes same as reads
+         // any flit that is written will be read only once
+         m_num_buffer_writes[vnet]++;
+         m_num_buffer_reads[vnet]++;
++       
++        bool HoL_blkng = false; // to tap the result of intra-swap
+         // do the swap here...
+         if(m_router->get_net_ptr()->isEnableIntraswap()) {
+-            // cout << "[ InputUnit.cc: " <<__LINE__ <<"] checking if m_vcs[0] is Full?" << endl;
+-            // cout << "[ InputUnit.cc: " <<__LINE__ <<"] size: " << m_vcs[0]->size() << endl;
+-            // cout << "[ InputUnit.cc: " <<__LINE__ <<"] size-left: " << m_vcs[0]->sizeLeft() << endl;
+-            // if (m_vcs[0]->isThreshold(m_router->get_net_ptr()->threshold())==true) {
++            bool result = false; // to tap the result of intra-swap
+             if (m_vcs[0]->isThreshold(m_router->get_net_ptr()->threshold())==true) {
+                 // DO SWAPPING HERE
+-                // cout << "[ InputUnit.cc: " <<__LINE__ <<"] m_vcs[0] is Full => Doing Swap here" << endl;
++                DPRINTF(RubyNetwork, "[ InputUnit.cc: %d] m_vcs[0] is Full => Doing Swap here", __LINE__);
+                 // assert(0);
+                 // m_vcs[0]->swap();
+                 // DO intelligent swap; instead of swapping it with the last flit
+                 // swap HoL with the next flit that has differnt outport then HoL
+-                m_vcs[0]->intel_swap();
++                result = m_vcs[0]->intel_swap(); // should we pass router object...?
++                if (result == true) {
++                    m_router->get_net_ptr()->m_num_swap_done++; // increment the counter here...
++                }
+             } else {
+-                // cout << "[ InputUnit.cc: " <<__LINE__ <<"] checking if m_vcs[0] is not Full" << endl;
++                DPRINTF(RubyNetwork, "[ InputUnit.cc: %d] checking if m_vcs[0] is not Full", __LINE__);
+             }   
+         } else {
+-            // cout << "[ InputUnit.cc: " <<__LINE__ <<"] checking if m_vcs[0] is Full?" << endl;
+-            // cout << "[ InputUnit.cc: " <<__LINE__ <<"] size: " << m_vcs[0]->size() << endl;
+-            // cout << "[ InputUnit.cc: " <<__LINE__ <<"] size-left: " << m_vcs[0]->sizeLeft() << endl;           
++            // This is the case of wormhole routing...
++            // Check here 'Huristically' how often HoL blocking occurs in worm hole...
++            HoL_blkng = m_vcs[0]->check_hol();
++            if (HoL_blkng == true) {
++                m_router->get_net_ptr()->m_num_hol++;  // increment the case for number of HoL
++            }
+         }     
+ 
+         Cycles pipe_stages = m_router->get_pipe_stages();
+diff -r 77ab02bdae9e -r 7f2a81527f85 src/mem/ruby/network/garnet2.0/InputUnit.hh
+--- a/src/mem/ruby/network/garnet2.0/InputUnit.hh	Tue Nov 22 03:17:13 2016 -0500
++++ b/src/mem/ruby/network/garnet2.0/InputUnit.hh	Fri Mar 17 18:46:01 2017 -0400
+@@ -44,6 +44,8 @@
+ #include "mem/ruby/network/garnet2.0/Router.hh"
+ #include "mem/ruby/network/garnet2.0/VirtualChannel.hh"
+ #include "mem/ruby/network/garnet2.0/flitBuffer.hh"
++#include "debug/RubyNetwork.hh"
++#include "mem/ruby/network/garnet2.0/GarnetNetwork.hh"
+ using namespace std;
+ 
+ class InputUnit : public Consumer
+@@ -97,16 +99,25 @@
+     inline void
+     swap(int vc)
+     {
+-        cout << "[ InputUnit.hh: " <<__LINE__ <<"] Doing Swap here" << endl;
++        DPRINTF(RubyNetwork, "[ InputUnit.hh: %d] Doing Swap here", __LINE__);
+         m_vcs[vc]->swap();  
+     }
+ 
+-    inline void
++    inline bool
+     intel_swap(int vc)
+     {
+-        m_vcs[vc]->intel_swap();    
++        bool result = false;
++        result = m_vcs[vc]->intel_swap(); 
++        return result;   
+     }
+ 
++    inline bool
++    check_hol(int vc)
++    {
++        bool result = false;
++        result = m_vcs[vc]->check_hol();
++        return result;
++    }
+     inline int
+     get_outvc(int invc)
+     {
+diff -r 77ab02bdae9e -r 7f2a81527f85 src/mem/ruby/network/garnet2.0/SwitchAllocator.cc
+--- a/src/mem/ruby/network/garnet2.0/SwitchAllocator.cc	Tue Nov 22 03:17:13 2016 -0500
++++ b/src/mem/ruby/network/garnet2.0/SwitchAllocator.cc	Fri Mar 17 18:46:01 2017 -0400
+@@ -142,7 +142,7 @@
+                         send_allowed(inport, invc, outport, outvc);
+ 
+                     if (make_request) {
+-                        m_input_arbiter_activity++;
++                        m_input_arbiter_activity++;// request are enqueued
+                         m_port_requests[outport][inport] = true;
+                         m_vc_winners[outport][inport]= invc;
+                         break; // got one vc winner for this port
+@@ -166,7 +166,8 @@
+                     // This flit is in SA stage
+                     int outport = t_flit->get_outport();
+                     int outvc = t_flit->get_vc();
+-                    assert(outvc==0);    
++                    assert(outvc==0);   
++                    // increment total request count here,.... 
+                     // check if the flit in this InputVC is allowed to be sent
+                     // send_allowed conditions described in that function.
+                     bool make_request =
+@@ -211,6 +212,7 @@
+         if (m_round_robin_inport[outport] >= m_num_inports)
+             m_round_robin_inport[outport] = 0;
+ 
++        // go through the vector m_port_request[outport][inport] and increment the count if more than 1 input port are requesting...
+         for (int inport_iter = 0; inport_iter < m_num_inports;
+                  inport_iter++) {
+ 
+diff -r 77ab02bdae9e -r 7f2a81527f85 src/mem/ruby/network/garnet2.0/VirtualChannel.hh
+--- a/src/mem/ruby/network/garnet2.0/VirtualChannel.hh	Tue Nov 22 03:17:13 2016 -0500
++++ b/src/mem/ruby/network/garnet2.0/VirtualChannel.hh	Fri Mar 17 18:46:01 2017 -0400
+@@ -38,6 +38,8 @@
+ 
+ #include "mem/ruby/network/garnet2.0/CommonTypes.hh"
+ #include "mem/ruby/network/garnet2.0/flitBuffer.hh"
++#include "debug/RubyNetwork.hh"
++#include "mem/ruby/network/garnet2.0/GarnetNetwork.hh"
+ using namespace std;
+ 
+ class VirtualChannel
+@@ -82,14 +84,24 @@
+     inline void
+     swap()
+     {
+-        cout << "[ VirtualChannel.hh: " <<__LINE__ <<"] Doing Swap here" << endl;
++        DPRINTF(RubyNetwork, "[ VirtualChannel.hh: %d] Doing Swap here", __LINE__);
+         m_input_buffer->swap();
+     }
+ 
+-    inline void
++    inline bool
+     intel_swap()
+     {
+-        m_input_buffer->intel_swap();
++        bool result = false;
++        result = m_input_buffer->intel_swap();
++        return result;
++    }
++
++    inline bool
++    check_hol()
++    {
++        bool result = false;
++        result = m_input_buffer->check_hol();
++        return result;
+     }
+ 
+     inline void
+diff -r 77ab02bdae9e -r 7f2a81527f85 src/mem/ruby/network/garnet2.0/flitBuffer.cc
+--- a/src/mem/ruby/network/garnet2.0/flitBuffer.cc	Tue Nov 22 03:17:13 2016 -0500
++++ b/src/mem/ruby/network/garnet2.0/flitBuffer.cc	Fri Mar 17 18:46:01 2017 -0400
+@@ -32,6 +32,8 @@
+ 
+ 
+ #include "mem/ruby/network/garnet2.0/flitBuffer.hh"
++#include "debug/RubyNetwork.hh"
++#include "mem/ruby/network/garnet2.0/GarnetNetwork.hh"
+ using namespace std;
+ 
+ flitBuffer::flitBuffer()
+@@ -60,31 +62,35 @@
+ flitBuffer::swap()
+ {
+     //Do swapping here
+-    cout << "[ flitBuffer.cc: " <<__LINE__ <<"] Doing Swap here" << endl;
++    DPRINTF(RubyNetwork, "[ flitBuffer.cc: %d] Doing Swap here", __LINE__);
+     int pos = m_buffer.size();
+     iter_swap(m_buffer.begin(), m_buffer.begin()+(pos-1));  
+ }
+ 
+-void
++bool
+ flitBuffer::intel_swap()
+ {
+     // Parse through the buffer and do swap of HoL
+     // with the first one having Outport different
+     // then HoL
++    bool result = false;
+     for (std::vector<flit *>::iterator i = m_buffer.begin(); i != m_buffer.end(); ++i) {
+         if((*i)->get_outport() != m_buffer.front()->get_outport()) {
+             // Removing this for now
+             //if((*i)->get_outport()== 5/*UNKNOWN_*/) {
+                 //continue;
+             //}
+-            // cout<< "(*i)->get_outport(): " << (*i)->get_outport()<<"  m_buffer.front()->get_outport(): " << m_buffer.front()->get_outport() << endl;
++            DPRINTF(RubyNetwork, "(*i)->get_outport(): %d m_buffer.front()->get_outport(): %d", (*i)->get_outport(), m_buffer.front()->get_outport());
+             int pos = i - m_buffer.begin();
+-            // cout << "at position: " << pos << endl;
++            DPRINTF(RubyNetwork, "at position: %d", pos);
+             // assert(0);
+             iter_swap(m_buffer.begin(), m_buffer.begin()+(pos));
+-            // cout << "m_buffer.front()->get_outport(): "  << m_buffer.front()->get_outport() << endl;
++            // You have completed the swap here.. increment your variable...
++            DPRINTF(RubyNetwork, "m_buffer.front()->get_outport(): %d", m_buffer.front()->get_outport());
+             // assert(0);
+-            return; // you have done the swapping.. Just return.            
++            // set 'result' as true.. and return the result
++            result = true;
++            return (result); // you have done the swapping.. Just return.            
+             //break;
+         }
+     }
+@@ -92,12 +98,34 @@
+     // whoes outport is different then the one at HoL, which is stuck....
+     // In some sense you have detected the deadlock.. could be used for deadlock detection
+     // if(m_buffer.size() == 4) { // the buffer is full with all flits pointing to same destination
+-        // cout << "m_buffer.front()->get_outport(): " << m_buffer.front()->get_outport(); 
+-        // assert(0);
+-    // } 
++        // DPRINTF(RubyNetwork, "m_buffer.front()->get_outport(): %d", m_buffer.front()->get_outport()); 
++    // }
++        return (result); // by default result is false
+ }
+ 
+ bool
++flitBuffer::check_hol()
++{
++    // going with following heuristic for now to check for HoL
++    // We are only counting the number of instances of HoL and 
++    // not number of flit... inorder to evaluate how often does
++    // swap eleminate HoL instances...
++    // If number of flit in the queue is 3 or more with outport
++    // of head flit different than outport of flit sitting next
++    // to it.. then it is a "instance of HoL": huristically...
++    bool result = false;
++    if(size() > 2) {
++        std::vector<flit *>::iterator i = m_buffer.begin();
++       if ( (*i)->get_outport() != (*(++i))->get_outport()) {
++            result = true; // huristically this is the case for hol()
++            return result;
++        }
++    }
++    
++    return result; // if that's not true; then there is no HoL
++
++}
++bool
+ flitBuffer::isReady(Cycles curTime)
+ {
+     if (m_buffer.size() != 0 ) {
+diff -r 77ab02bdae9e -r 7f2a81527f85 src/mem/ruby/network/garnet2.0/flitBuffer.hh
+--- a/src/mem/ruby/network/garnet2.0/flitBuffer.hh	Tue Nov 22 03:17:13 2016 -0500
++++ b/src/mem/ruby/network/garnet2.0/flitBuffer.hh	Fri Mar 17 18:46:01 2017 -0400
+@@ -54,7 +54,8 @@
+     bool isThreshold(int threshold);
+     void setMaxSize(int maximum);
+     void swap();
+-    void intel_swap();  
++    bool intel_swap();  
++    bool check_hol();
+ 
+     int bufferSizeLeft();
+ 

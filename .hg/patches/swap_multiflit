@@ -1,0 +1,48 @@
+diff -r 71c73e650f2c src/mem/ruby/network/garnet2.0/NetworkInterface.cc
+--- a/src/mem/ruby/network/garnet2.0/NetworkInterface.cc	Mon Nov 21 20:03:47 2016 -0500
++++ b/src/mem/ruby/network/garnet2.0/NetworkInterface.cc	Mon Nov 21 21:00:53 2016 -0500
+@@ -231,7 +231,7 @@
+ 
+ // Embed the protocol message into flits
+ bool
+-NetworkInterface::flitisizeMessage(MsgPtr msg_ptr, int vnet)
++NetworkInterface::flitisizeMessage(MsgPtr msg_ptr, int msg_vnet)
+ {
+     Message *net_msg_ptr = msg_ptr.get();
+     NetDest net_msg_dest = net_msg_ptr->getDestination();
+@@ -244,11 +244,19 @@
+     int num_flits = (int) ceil((double) m_net_ptr->MessageSizeType_to_int(
+         net_msg_ptr->getMessageSize())/m_net_ptr->getNiFlitSize());
+ 
++    // HACK
++    // FOR WORMHOLE AND SWAP NOC
++    int vnet = msg_vnet;
++    if (num_flits > 1)
++        vnet = 0;
++
+     // loop to convert all multicast messages into unicast messages
+     for (int ctr = 0; ctr < dest_nodes.size(); ctr++) {
+ 
+         // this will return a free output virtual channel
+         int vc = calculateVC(vnet);
++        if(m_net_ptr->isEnableWormhole())
++            assert(vc == 0);
+ 
+         if (vc == -1) {
+             return false ;
+@@ -295,8 +303,13 @@
+         m_net_ptr->increment_injected_packets(vnet);
+         for (int i = 0; i < num_flits; i++) {
+             m_net_ptr->increment_injected_flits(vnet);
+-            flit *fl = new flit(i, vc, vnet, route, num_flits, new_msg_ptr,
+-                curCycle());
++            //flit *fl = new flit(i, vc, vnet, route, num_flits, new_msg_ptr,
++            //    curCycle());
++
++            // HACK
++            // For Wormhole and Swap NoC
++            // Convert each flit into a single-flit packet
++            flit *fl = new flit(0, vc, vnet, route, 1, new_msg_ptr, curCycle());
+ 
+             fl->set_src_delay(curCycle() - ticksToCycles(msg_ptr->getTime()));
+             m_ni_out_vcs[vc]->insert(fl);

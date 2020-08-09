@@ -1,0 +1,163 @@
+diff -r bc20a4fe1a9a configs/example/garnet_synth_traffic.py
+--- a/configs/example/garnet_synth_traffic.py	Mon Oct 10 12:39:47 2016 -0400
++++ b/configs/example/garnet_synth_traffic.py	Sun Nov 20 02:19:42 2016 -0500
+@@ -51,7 +51,12 @@
+ parser.add_option("--synthetic", type="choice", default="uniform_random",
+                   choices=['uniform_random', 'tornado', 'bit_complement', \
+                            'bit_reverse', 'bit_rotation', 'neighbor', \
+-                            'shuffle', 'transpose'])
++                            'shuffle', 'transpose', \
++                            'tornado_random_10', 'tornado_random_20', \
++                            'tornado_random_30', 'tornado_random_40', \
++                            'tornado_random_50', 'tornado_random_60', \
++                            'tornado_random_70', 'tornado_random_80', \
++                            'tornado_random_90'])
+ 
+ parser.add_option("-i", "--injectionrate", type="float", default=0.1,
+                   metavar="I",
+diff -r bc20a4fe1a9a src/cpu/testers/garnet_synthetic_traffic/GarnetSyntheticTraffic.cc
+--- a/src/cpu/testers/garnet_synthetic_traffic/GarnetSyntheticTraffic.cc	Mon Oct 10 12:39:47 2016 -0400
++++ b/src/cpu/testers/garnet_synthetic_traffic/GarnetSyntheticTraffic.cc	Sun Nov 20 02:19:42 2016 -0500
+@@ -239,7 +239,107 @@
+         dest_x = (src_x + (int) ceil(radix/2) - 1) % radix;
+         dest_y = src_y;
+         destination = dest_y*radix + dest_x;
++    } else if (traffic == TORNADO_RANDOM_10) {
++        int rand = random_mt.random(0, 100);
++        if (rand < 10) {
++            // random
++            destination = random_mt.random<unsigned>(0, num_destinations - 1);
++        } else {
++            // tornado
++            dest_x = (src_x + (int) ceil(radix/2) - 1) % radix;
++            dest_y = src_y;
++            destination = dest_y*radix + dest_x;
++        }
++    } else if (traffic == TORNADO_RANDOM_20) {
++        int rand = random_mt.random(0, 100);
++        if (rand < 20) {
++            // random
++            destination = random_mt.random<unsigned>(0, num_destinations - 1);
++        } else {
++            // tornado
++            dest_x = (src_x + (int) ceil(radix/2) - 1) % radix;
++            dest_y = src_y;
++            destination = dest_y*radix + dest_x;
++        }
++    } else if (traffic == TORNADO_RANDOM_30) {
++        int rand = random_mt.random(0, 100);
++        if (rand < 30) {
++            // random
++            destination = random_mt.random<unsigned>(0, num_destinations - 1);
++        } else {
++            // tornado
++            dest_x = (src_x + (int) ceil(radix/2) - 1) % radix;
++            dest_y = src_y;
++            destination = dest_y*radix + dest_x;
++        }
++    } else if (traffic == TORNADO_RANDOM_40) {
++        int rand = random_mt.random(0, 100);
++        if (rand < 40) {
++            // random
++            destination = random_mt.random<unsigned>(0, num_destinations - 1);
++        } else {
++            // tornado
++            dest_x = (src_x + (int) ceil(radix/2) - 1) % radix;
++            dest_y = src_y;
++            destination = dest_y*radix + dest_x;
++        }
++    } else if (traffic == TORNADO_RANDOM_50) {
++        int rand = random_mt.random(0, 100);
++        if (rand < 50) {
++            // random
++            destination = random_mt.random<unsigned>(0, num_destinations - 1);
++        } else {
++            // tornado
++            dest_x = (src_x + (int) ceil(radix/2) - 1) % radix;
++            dest_y = src_y;
++            destination = dest_y*radix + dest_x;
++        }
++    } else if (traffic == TORNADO_RANDOM_60) {
++        int rand = random_mt.random(0, 100);
++        if (rand < 60) {
++            // random
++            destination = random_mt.random<unsigned>(0, num_destinations - 1);
++        } else {
++            // tornado
++            dest_x = (src_x + (int) ceil(radix/2) - 1) % radix;
++            dest_y = src_y;
++            destination = dest_y*radix + dest_x;
++        }
++    } else if (traffic == TORNADO_RANDOM_70) {
++        int rand = random_mt.random(0, 100);
++        if (rand < 70) {
++            // random
++            destination = random_mt.random<unsigned>(0, num_destinations - 1);
++        } else {
++            // tornado
++            dest_x = (src_x + (int) ceil(radix/2) - 1) % radix;
++            dest_y = src_y;
++            destination = dest_y*radix + dest_x;
++        }
++    } else if (traffic == TORNADO_RANDOM_80) {
++        int rand = random_mt.random(0, 100);
++        if (rand < 80) {
++            // random
++            destination = random_mt.random<unsigned>(0, num_destinations - 1);
++        } else {
++            // tornado
++            dest_x = (src_x + (int) ceil(radix/2) - 1) % radix;
++            dest_y = src_y;
++            destination = dest_y*radix + dest_x;
++        }
++    } else if (traffic == TORNADO_RANDOM_90) {
++        int rand = random_mt.random(0, 100);
++        if (rand < 90) {
++            // random
++            destination = random_mt.random<unsigned>(0, num_destinations - 1);
++        } else {
++            // tornado
++            dest_x = (src_x + (int) ceil(radix/2) - 1) % radix;
++            dest_y = src_y;
++            destination = dest_y*radix + dest_x;
++        }
+     }
++
+     else {
+         fatal("Unknown Traffic Type: %s!\n", traffic);
+     }
+@@ -334,6 +434,15 @@
+     trafficStringToEnum["tornado"] = TORNADO_;
+     trafficStringToEnum["transpose"] = TRANSPOSE_;
+     trafficStringToEnum["uniform_random"] = UNIFORM_RANDOM_;
++    trafficStringToEnum["tornado_random_10"] = TORNADO_RANDOM_10;
++    trafficStringToEnum["tornado_random_20"] = TORNADO_RANDOM_20;
++    trafficStringToEnum["tornado_random_30"] = TORNADO_RANDOM_30;
++    trafficStringToEnum["tornado_random_40"] = TORNADO_RANDOM_40;
++    trafficStringToEnum["tornado_random_50"] = TORNADO_RANDOM_50;
++    trafficStringToEnum["tornado_random_60"] = TORNADO_RANDOM_60;
++    trafficStringToEnum["tornado_random_70"] = TORNADO_RANDOM_70;
++    trafficStringToEnum["tornado_random_80"] = TORNADO_RANDOM_80;
++    trafficStringToEnum["tornado_random_90"] = TORNADO_RANDOM_90;
+ }
+ 
+ void
+diff -r bc20a4fe1a9a src/cpu/testers/garnet_synthetic_traffic/GarnetSyntheticTraffic.hh
+--- a/src/cpu/testers/garnet_synthetic_traffic/GarnetSyntheticTraffic.hh	Mon Oct 10 12:39:47 2016 -0400
++++ b/src/cpu/testers/garnet_synthetic_traffic/GarnetSyntheticTraffic.hh	Sun Nov 20 02:19:42 2016 -0500
+@@ -50,6 +50,15 @@
+                   TORNADO_ = 5,
+                   TRANSPOSE_ = 6,
+                   UNIFORM_RANDOM_ = 7,
++                  TORNADO_RANDOM_10 = 8,
++                  TORNADO_RANDOM_20 = 9,
++                  TORNADO_RANDOM_30 = 10,
++                  TORNADO_RANDOM_40 = 11,
++                  TORNADO_RANDOM_50 = 12,
++                  TORNADO_RANDOM_60 = 13,
++                  TORNADO_RANDOM_70 = 14,
++                  TORNADO_RANDOM_80 = 15,
++                  TORNADO_RANDOM_90 = 16,
+                   NUM_TRAFFIC_PATTERNS_};
+ 
+ class Packet;

@@ -1,0 +1,423 @@
+# HG changeset patch
+# Parent  a08c1803d90412fbba081ab2c0d7bc0fcd80d998
+
+diff --git a/configs/network/Network.py b/configs/network/Network.py
+--- a/configs/network/Network.py
++++ b/configs/network/Network.py
+@@ -63,8 +63,19 @@
+     parser.add_option("--enable-wormhole", action="store", type="int",
+                         default=0, help="""To enable the wormhole routing;
+                             by default its disabled.""")
++    
++
++    parser.add_option("--enable-intraswap", action="store", type="int",
++                        default=0, help="""To enable intra-swap of flits within 
++                        the same queue. Each number is associated with different policy.;
++                            by default its disabled.""")
++    parser.add_option("--intraswap-threshold", action="store", type="int",
++                        default=100, help="""Threshold associated on when to do 
++                        swap""")
+     parser.add_option("--wormhole-buffer-depth", action="store", type="int", default=4,
+                       help="""size of wormhole buffer""")
++
++
+     parser.add_option("--routing-algorithm", action="store", type="int",
+                       default=0,
+                       help="""routing algorithm in network.
+@@ -116,6 +127,17 @@
+         network.wormhole_buffer_depth = options.wormhole_buffer_depth
+         network.vcs_per_vnet = 1 # Use 1 VC.
+ 
++    if options.enable_intraswap >= 1:
++        assert(options.network == "garnet2.0")
++        network.enable_intraswap = options.enable_intraswap
++        network.wormhole_buffer_depth = options.wormhole_buffer_depth
++        network.vcs_per_vnet = 1 # Use 1 VC.
++
++    if options.intraswap_threshold >= 0: #threshold can't be negative
++        assert(options.network == "garnet2.0")
++        network.intraswap_threshold = options.intraswap_threshold
++        network.vcs_per_vnet = 1 # Use 1 VC.
++
+     if options.network == "simple":
+         network.setup_buffers()
+ 
+diff --git a/my_scripts/build_Garnet_standalone.sh b/my_scripts/build_Garnet_standalone.sh
+old mode 100644
+new mode 100755
+--- a/my_scripts/build_Garnet_standalone.sh
++++ b/my_scripts/build_Garnet_standalone.sh
+@@ -1,3 +1,3 @@
+ #!/bin/tcsh
+ source my_scripts/set_env.cshrc
+-python `which scons` -j 24 build/Garnet_standalone/gem5.debug
++python `which scons` -j 72 build/Garnet_standalone/gem5.debug
+diff --git a/my_scripts/extract_network_stats.sh b/my_scripts/extract_network_stats.sh
+old mode 100644
+new mode 100755
+--- a/my_scripts/extract_network_stats.sh
++++ b/my_scripts/extract_network_stats.sh
+@@ -1,7 +1,7 @@
+ echo > network_stats.txt
+-grep "packets_injected::total" m5out/stats.txt | sed 's/system.ruby.network.packets_injected::total\s*/packets_injected = /' >> network_stats.txt
+-grep "packets_received::total" m5out/stats.txt | sed 's/system.ruby.network.packets_received::total\s*/packets_received = /' >> network_stats.txt
+-grep "average_packet_latency" m5out/stats.txt | sed 's/system.ruby.network.average_packet_latency\s*/average_packet_latency = /' >> network_stats.txt
+-grep "flits_injected::total" m5out/stats.txt | sed 's/system.ruby.network.flits_injected::total\s*/flits_injected = /' >> network_stats.txt
+-grep "flits_received::total" m5out/stats.txt | sed 's/system.ruby.network.flits_received::total\s*/flits_received = /' >> network_stats.txt
+-grep "average_flit_latency" m5out/stats.txt | sed 's/system.ruby.network.average_flit_latency\s*/average_flit_latency = /' >> network_stats.txt
++grep "packets_injected::total" m5out/stats.txt | sed 's/system.ruby.network.packets_injected::total\s*/packets_injected = /' #>> network_stats.txt
++grep "packets_received::total" m5out/stats.txt | sed 's/system.ruby.network.packets_received::total\s*/packets_received = /' #>> network_stats.txt
++grep "average_packet_latency" m5out/stats.txt | sed 's/system.ruby.network.average_packet_latency\s*/average_packet_latency = /' #>> network_stats.txt
++grep "flits_injected::total" m5out/stats.txt | sed 's/system.ruby.network.flits_injected::total\s*/flits_injected = /' #>> network_stats.txt
++grep "flits_received::total" m5out/stats.txt | sed 's/system.ruby.network.flits_received::total\s*/flits_received = /' #>> network_stats.txt
++grep "average_flit_latency" m5out/stats.txt | sed 's/system.ruby.network.average_flit_latency\s*/average_flit_latency = /' #>> network_stats.txt
+diff --git a/my_scripts/run_example.sh b/my_scripts/run_example.sh
+old mode 100644
+new mode 100755
+diff --git a/my_scripts/set_env.cshrc b/my_scripts/set_env.cshrc
+old mode 100644
+new mode 100755
+diff --git a/src/mem/ruby/network/garnet2.0/GarnetNetwork.cc b/src/mem/ruby/network/garnet2.0/GarnetNetwork.cc
+--- a/src/mem/ruby/network/garnet2.0/GarnetNetwork.cc
++++ b/src/mem/ruby/network/garnet2.0/GarnetNetwork.cc
+@@ -63,6 +63,8 @@
+     m_ni_flit_size = p->ni_flit_size;
+     m_vcs_per_vnet = p->vcs_per_vnet;
+     m_enable_wormhole = p->enable_wormhole;
++    m_enable_intraswap = p->enable_intraswap;
++    m_threshold = p->intraswap_threshold;
+     m_buffers_per_data_vc = p->buffers_per_data_vc;
+     m_buffers_per_ctrl_vc = p->buffers_per_ctrl_vc;
+ 
+@@ -70,6 +72,14 @@
+         //ctrl vc models wormhole buffer
+         m_buffers_per_ctrl_vc = p->wormhole_buffer_depth;
+     }
++
++    if(isEnableIntraswap()) { 
++        //assert(0);
++        //mparasar3: can add code here to do
++        //something interesting.
++        cout << "intraRouterSwap is enabled" << endl;
++        m_buffers_per_ctrl_vc = p->wormhole_buffer_depth;
++    }
+     m_routing_algorithm = p->routing_algorithm;
+ 
+     m_enable_fault_model = p->enable_fault_model;
+diff --git a/src/mem/ruby/network/garnet2.0/GarnetNetwork.hh b/src/mem/ruby/network/garnet2.0/GarnetNetwork.hh
+--- a/src/mem/ruby/network/garnet2.0/GarnetNetwork.hh
++++ b/src/mem/ruby/network/garnet2.0/GarnetNetwork.hh
+@@ -68,6 +68,8 @@
+     uint32_t getNiFlitSize() const { return m_ni_flit_size; }
+     uint32_t getVCsPerVnet() const { return m_vcs_per_vnet; }
+     bool isEnableWormhole() const { return m_enable_wormhole; }
++    bool isEnableIntraswap() const { return m_enable_intraswap; }
++    uint32_t threshold() const {return m_threshold; }
+     uint32_t getBuffersPerDataVC() { return m_buffers_per_data_vc; }
+     uint32_t getBuffersPerCtrlVC() { return m_buffers_per_ctrl_vc; }
+     int getRoutingAlgorithm() const { return m_routing_algorithm; }
+@@ -151,6 +153,8 @@
+     uint32_t m_ni_flit_size;
+     uint32_t m_vcs_per_vnet;
+     bool m_enable_wormhole;
++    uint32_t m_enable_intraswap;
++    uint32_t m_threshold;
+     uint32_t m_buffers_per_ctrl_vc;
+     uint32_t m_buffers_per_data_vc;
+     int m_routing_algorithm;
+diff --git a/src/mem/ruby/network/garnet2.0/GarnetNetwork.py b/src/mem/ruby/network/garnet2.0/GarnetNetwork.py
+--- a/src/mem/ruby/network/garnet2.0/GarnetNetwork.py
++++ b/src/mem/ruby/network/garnet2.0/GarnetNetwork.py
+@@ -41,6 +41,8 @@
+     ni_flit_size = Param.UInt32(16, "network interface flit size in bytes")
+     vcs_per_vnet = Param.UInt32(4, "virtual channels per virtual network");
+     enable_wormhole = Param.UInt32(0, "To enable the wormhole routing");
++    enable_intraswap = Param.UInt32(0, "To enable the intraswap");
++    intraswap_threshold = Param.UInt32(100, "To enable the intraswap threshold"); # default value os 100  
+     buffers_per_data_vc = Param.UInt32(4, "buffers per data virtual channel");
+     buffers_per_ctrl_vc = Param.UInt32(1, "buffers per ctrl virtual channel");
+     routing_algorithm = Param.Int(0,
+@@ -59,6 +61,13 @@
+                              "virtual channels per virtual network")
+     enable_wormhole = Param.UInt32(Parent.enable_wormhole,
+                              "to enable wormhole routing")
++
++    enable_intraswap = Param.UInt32(Parent.enable_intraswap,
++                             "to enable intraswap routing")
++
++    intraswap_threshold = Param.UInt32(Parent.intraswap_threshold,
++                             "to enable intraswap threshold")
++
+     virt_nets = Param.UInt32(Parent.number_of_virtual_networks,
+                           "number of virtual networks")
+ 
+@@ -70,5 +79,12 @@
+                               "virtual channels per virtual network")
+     enable_wormhole = Param.UInt32(Parent.enable_wormhole,
+                               "to enable wormhole routing")
++
++    enable_intraswap = Param.UInt32(Parent.enable_intraswap,
++                              "to enable intraswap routing")
++
++    intraswap_threshold = Param.UInt32(Parent.intraswap_threshold,
++                              "to enable intraswap threshold")
++
+     virt_nets = Param.UInt32(Parent.number_of_virtual_networks,
+                           "number of virtual networks")
+diff --git a/src/mem/ruby/network/garnet2.0/InputUnit.cc b/src/mem/ruby/network/garnet2.0/InputUnit.cc
+--- a/src/mem/ruby/network/garnet2.0/InputUnit.cc
++++ b/src/mem/ruby/network/garnet2.0/InputUnit.cc
+@@ -136,6 +136,28 @@
+         // any flit that is written will be read only once
+         m_num_buffer_writes[vnet]++;
+         m_num_buffer_reads[vnet]++;
++        // do the swap here...
++        if(m_router->get_net_ptr()->isEnableIntraswap()) {
++            // cout << "[ InputUnit.cc: " <<__LINE__ <<"] checking if m_vcs[0] is Full?" << endl;
++            // cout << "[ InputUnit.cc: " <<__LINE__ <<"] size: " << m_vcs[0]->size() << endl;
++            // cout << "[ InputUnit.cc: " <<__LINE__ <<"] size-left: " << m_vcs[0]->sizeLeft() << endl;
++            // if (m_vcs[0]->isThreshold(m_router->get_net_ptr()->threshold())==true) {
++            if (m_vcs[0]->isThreshold(m_router->get_net_ptr()->threshold())==true) {
++                // DO SWAPPING HERE
++                // cout << "[ InputUnit.cc: " <<__LINE__ <<"] m_vcs[0] is Full => Doing Swap here" << endl;
++                // assert(0);
++                // m_vcs[0]->swap();
++                // DO intelligent swap; instead of swapping it with the last flit
++                // swap HoL with the next flit that has differnt outport then HoL
++                m_vcs[0]->intel_swap();
++            } else {
++                // cout << "[ InputUnit.cc: " <<__LINE__ <<"] checking if m_vcs[0] is not Full" << endl;
++            }   
++        } else {
++            // cout << "[ InputUnit.cc: " <<__LINE__ <<"] checking if m_vcs[0] is Full?" << endl;
++            // cout << "[ InputUnit.cc: " <<__LINE__ <<"] size: " << m_vcs[0]->size() << endl;
++            // cout << "[ InputUnit.cc: " <<__LINE__ <<"] size-left: " << m_vcs[0]->sizeLeft() << endl;           
++        }     
+ 
+         Cycles pipe_stages = m_router->get_pipe_stages();
+         if (pipe_stages == 1) {
+diff --git a/src/mem/ruby/network/garnet2.0/InputUnit.hh b/src/mem/ruby/network/garnet2.0/InputUnit.hh
+--- a/src/mem/ruby/network/garnet2.0/InputUnit.hh
++++ b/src/mem/ruby/network/garnet2.0/InputUnit.hh
+@@ -44,6 +44,7 @@
+ #include "mem/ruby/network/garnet2.0/Router.hh"
+ #include "mem/ruby/network/garnet2.0/VirtualChannel.hh"
+ #include "mem/ruby/network/garnet2.0/flitBuffer.hh"
++using namespace std;
+ 
+ class InputUnit : public Consumer
+ {
+@@ -93,6 +94,19 @@
+         return m_vcs[vc]->size();
+     }    
+ 
++    inline void
++    swap(int vc)
++    {
++        cout << "[ InputUnit.hh: " <<__LINE__ <<"] Doing Swap here" << endl;
++        m_vcs[vc]->swap();  
++    }
++
++    inline void
++    intel_swap(int vc)
++    {
++        m_vcs[vc]->intel_swap();    
++    }
++
+     inline int
+     get_outvc(int invc)
+     {
+diff --git a/src/mem/ruby/network/garnet2.0/OutVcState.cc b/src/mem/ruby/network/garnet2.0/OutVcState.cc
+--- a/src/mem/ruby/network/garnet2.0/OutVcState.cc
++++ b/src/mem/ruby/network/garnet2.0/OutVcState.cc
+@@ -45,7 +45,7 @@
+     if (network_ptr->get_vnet_type(id) == DATA_VNET_)
+         m_max_credit_count = network_ptr->getBuffersPerDataVC();
+     else
+-        m_max_credit_count = network_ptr->getBuffersPerCtrlVC();
++        m_max_credit_count = network_ptr->getBuffersPerCtrlVC(); // impt
+ 
+     m_credit_count = m_max_credit_count;
+     assert(m_credit_count >= 1);
+diff --git a/src/mem/ruby/network/garnet2.0/SwitchAllocator.cc b/src/mem/ruby/network/garnet2.0/SwitchAllocator.cc
+--- a/src/mem/ruby/network/garnet2.0/SwitchAllocator.cc
++++ b/src/mem/ruby/network/garnet2.0/SwitchAllocator.cc
+@@ -125,6 +125,7 @@
+                 next_round_robin_invc = 0;
+             m_round_robin_invc[inport] = next_round_robin_invc;
+ 
++
+             for (int invc_iter = 0; invc_iter < m_num_vcs; invc_iter++) {
+ 
+                 if (m_input_unit[inport]->need_stage(invc, SA_,
+@@ -379,7 +380,8 @@
+ 
+         // needs outvc
+         // this is only true for HEAD and HEAD_TAIL flits.
+-
++        if(m_router->get_net_ptr()->isEnableWormhole())
++            assert(0);
+         if (m_output_unit[outport]->has_free_vc(vnet)) {
+ 
+             has_outvc = true;
+@@ -425,6 +427,9 @@
+ int
+ SwitchAllocator::vc_allocate(int outport, int inport, int invc)
+ {
++
++    if(m_router->get_net_ptr()->isEnableWormhole())
++        assert(0);
+     // Select a free VC from the output port
+     int outvc = m_output_unit[outport]->select_free_vc(get_vnet(invc));
+ 
+diff --git a/src/mem/ruby/network/garnet2.0/VirtualChannel.hh b/src/mem/ruby/network/garnet2.0/VirtualChannel.hh
+--- a/src/mem/ruby/network/garnet2.0/VirtualChannel.hh
++++ b/src/mem/ruby/network/garnet2.0/VirtualChannel.hh
+@@ -38,6 +38,7 @@
+ 
+ #include "mem/ruby/network/garnet2.0/CommonTypes.hh"
+ #include "mem/ruby/network/garnet2.0/flitBuffer.hh"
++using namespace std;
+ 
+ class VirtualChannel
+ {
+@@ -68,6 +69,29 @@
+         m_input_buffer->insert(t_flit);
+     }
+ 
++    inline bool
++    isFull()
++    {
++        return m_input_buffer->isFull();
++    }
++    inline bool
++    isThreshold(int threshold)
++    {
++        return m_input_buffer->isThreshold(threshold);
++    }
++    inline void
++    swap()
++    {
++        cout << "[ VirtualChannel.hh: " <<__LINE__ <<"] Doing Swap here" << endl;
++        m_input_buffer->swap();
++    }
++
++    inline void
++    intel_swap()
++    {
++        m_input_buffer->intel_swap();
++    }
++
+     inline void
+     set_state(VC_state_type m_state, Cycles curTime)
+     {
+@@ -87,6 +111,12 @@
+         return m_input_buffer->size();
+     }
+ 
++    inline int
++    sizeLeft()
++    {
++        return m_input_buffer->bufferSizeLeft();
++    }
++
+     inline flit*
+     getTopFlit()
+     {
+diff --git a/src/mem/ruby/network/garnet2.0/flitBuffer.cc b/src/mem/ruby/network/garnet2.0/flitBuffer.cc
+--- a/src/mem/ruby/network/garnet2.0/flitBuffer.cc
++++ b/src/mem/ruby/network/garnet2.0/flitBuffer.cc
+@@ -32,6 +32,7 @@
+ 
+ 
+ #include "mem/ruby/network/garnet2.0/flitBuffer.hh"
++using namespace std;
+ 
+ flitBuffer::flitBuffer()
+ {
+@@ -49,6 +50,53 @@
+     return (m_buffer.size() == 0);
+ }
+ 
++int
++flitBuffer::bufferSizeLeft()
++{
++    return (max_size - m_buffer.size());
++}
++
++void
++flitBuffer::swap()
++{
++    //Do swapping here
++    cout << "[ flitBuffer.cc: " <<__LINE__ <<"] Doing Swap here" << endl;
++    int pos = m_buffer.size();
++    iter_swap(m_buffer.begin(), m_buffer.begin()+(pos-1));  
++}
++
++void
++flitBuffer::intel_swap()
++{
++    // Parse through the buffer and do swap of HoL
++    // with the first one having Outport different
++    // then HoL
++    for (std::vector<flit *>::iterator i = m_buffer.begin(); i != m_buffer.end(); ++i) {
++        if((*i)->get_outport() != m_buffer.front()->get_outport()) {
++            // Removing this for now
++            //if((*i)->get_outport()== 5/*UNKNOWN_*/) {
++                //continue;
++            //}
++            // cout<< "(*i)->get_outport(): " << (*i)->get_outport()<<"  m_buffer.front()->get_outport(): " << m_buffer.front()->get_outport() << endl;
++            int pos = i - m_buffer.begin();
++            // cout << "at position: " << pos << endl;
++            // assert(0);
++            iter_swap(m_buffer.begin(), m_buffer.begin()+(pos));
++            // cout << "m_buffer.front()->get_outport(): "  << m_buffer.front()->get_outport() << endl;
++            // assert(0);
++            return; // you have done the swapping.. Just return.            
++            //break;
++        }
++    }
++    // If control comes to this place it means that we have parsed the whole buffer and there is no flit
++    // whoes outport is different then the one at HoL, which is stuck....
++    // In some sense you have detected the deadlock.. could be used for deadlock detection
++    // if(m_buffer.size() == 4) { // the buffer is full with all flits pointing to same destination
++        // cout << "m_buffer.front()->get_outport(): " << m_buffer.front()->get_outport(); 
++        // assert(0);
++    // } 
++}
++
+ bool
+ flitBuffer::isReady(Cycles curTime)
+ {
+@@ -69,7 +117,15 @@
+ bool
+ flitBuffer::isFull()
+ {
++    // this is the issue... hack to check if swap works!
+     return (m_buffer.size() >= max_size);
++    // return (m_buffer.size() >= 4/*max_size*/);
++}
++
++bool
++flitBuffer::isThreshold(int threshold)
++{
++    return(m_buffer.size() >= threshold);
+ }
+ 
+ void
+diff --git a/src/mem/ruby/network/garnet2.0/flitBuffer.hh b/src/mem/ruby/network/garnet2.0/flitBuffer.hh
+--- a/src/mem/ruby/network/garnet2.0/flitBuffer.hh
++++ b/src/mem/ruby/network/garnet2.0/flitBuffer.hh
+@@ -51,7 +51,12 @@
+     bool isEmpty();
+     void print(std::ostream& out) const;
+     bool isFull();
++    bool isThreshold(int threshold);
+     void setMaxSize(int maximum);
++    void swap();
++    void intel_swap();  
++
++    int bufferSizeLeft();
+ 
+     flit *
+     getTopFlit()

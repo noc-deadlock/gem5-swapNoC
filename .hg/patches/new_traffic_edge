@@ -1,0 +1,27 @@
+# HG changeset patch
+# Parent  b68783de859702359b3604a042a3d1db71efb57c
+
+diff -r b68783de8597 -r c749a0390493 configs/network/Network.py
+--- a/configs/network/Network.py	Mon Nov 21 20:09:11 2016 -0500
++++ b/configs/network/Network.py	Sun Mar 19 02:23:32 2017 -0400
+@@ -135,7 +135,7 @@
+         network.wormhole_buffer_depth = options.wormhole_buffer_depth
+         network.vcs_per_vnet = 1 # Use 1 VC.
+ 
+-    if options.intraswap_threshold >= 0: #threshold can't be negative
++    if options.intraswap_threshold >= 0: #threshold can't be negative #use of threshold: This is a trigger, to specify at what queue length to do swap
+         assert(options.network == "garnet2.0")
+         network.intraswap_threshold = options.intraswap_threshold
+         network.vcs_per_vnet = 1 # Use 1 VC.
+diff -r b68783de8597 -r c749a0390493 src/mem/ruby/network/garnet2.0/GarnetNetwork.py
+--- a/src/mem/ruby/network/garnet2.0/GarnetNetwork.py	Mon Nov 21 20:09:11 2016 -0500
++++ b/src/mem/ruby/network/garnet2.0/GarnetNetwork.py	Sun Mar 19 02:23:32 2017 -0400
+@@ -42,7 +42,7 @@
+     vcs_per_vnet = Param.UInt32(4, "virtual channels per virtual network");
+     enable_wormhole = Param.UInt32(0, "To enable the wormhole routing");
+     enable_intraswap = Param.UInt32(0, "To enable the intraswap");
+-    intraswap_threshold = Param.UInt32(100, "To enable the intraswap threshold"); # default value os 100  
++    intraswap_threshold = Param.UInt32(100, "To enable the intraswap threshold"); # default value is 100
+     buffers_per_data_vc = Param.UInt32(4, "buffers per data virtual channel");
+     buffers_per_ctrl_vc = Param.UInt32(1, "buffers per ctrl virtual channel");
+     routing_algorithm = Param.Int(0,

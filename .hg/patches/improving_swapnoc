@@ -1,0 +1,568 @@
+# HG changeset patch
+# Parent  64190ba08445e79a5c6cd4f16042c2f17c02e4da
+
+diff -r 64190ba08445 src/mem/ruby/network/garnet2.0/InputUnit.cc
+--- a/src/mem/ruby/network/garnet2.0/InputUnit.cc	Sun May 07 00:04:01 2017 -0400
++++ b/src/mem/ruby/network/garnet2.0/InputUnit.cc	Sun May 14 20:02:19 2017 -0400
+@@ -49,6 +49,7 @@
+     m_router = router;
+     m_num_vcs = m_router->get_num_vcs();
+     m_vc_per_vnet = m_router->get_vc_per_vnet();
++    m_output_unit = m_router->get_outputUnit_ref();  // using here to get credit count
+ 
+     m_num_buffer_reads.resize(m_num_vcs/m_vc_per_vnet);
+     m_num_buffer_writes.resize(m_num_vcs/m_vc_per_vnet);
+@@ -122,7 +123,6 @@
+        if(m_router->get_net_ptr()->isEnableWormhole()) {
+ 
+             assert(vc==0);
+-
+             // Not full
+             assert(m_vcs[0]->size() < m_router->get_net_ptr()->getBuffersPerCtrlVC());
+         }
+@@ -138,19 +138,38 @@
+         m_num_buffer_reads[vnet]++;
+         // do the swap here...
+         if(m_router->get_net_ptr()->isEnableIntraswap()) {
+-            // if (m_vcs[0]->isThreshold(m_router->get_net_ptr()->threshold())==true) {
+             if (m_vcs[0]->isThreshold(m_router->get_net_ptr()->threshold())==true) {
+-                // DO SWAPPING HERE
+-                // m_vcs[0]->swap();
+-                // DO intelligent swap; instead of swapping it with the last flit
+-                // swap HoL with the next flit that has differnt outport then HoL
+-                m_vcs[0]->intel_swap();
++                // Instead of threshold.. do it on credit avaliablility basis of HoL flit
++                flit *f = m_vcs[0]->peekTopFlit(); // this is HoL flit...
++                int outport = f->get_outport();
++
++                bool credit = m_router->hasCredit(outport, 0);
++                if(credit == false) {
++                  if (m_vcs[0]->isThreshold(m_router->get_net_ptr()->threshold())==true) {
++                    m_router->get_net_ptr()->m_hol_total++; // this is hol blocking
++                    // DO SWAPPING HERE
++                    // m_vcs[0]->swap();
++                    // DO intelligent swap; instead of swapping it with the last flit
++                    // swap HoL with the next flit that has differnt outport then HoL
++//                    m_vcs[0]->intel_swap();
++                    m_vcs[0]->tail_swap();
++                    // Check if intel_swap() resolved hol()
++                    f = m_vcs[0]->peekTopFlit(); // this is new HoL flit
++                    credit = m_router->hasCredit(outport, 0/*outvc*/);
++                    if(credit)
++                        m_router->get_net_ptr()->m_hol_avoidable++;
++                    else
++                        m_router->get_net_ptr()->m_hol_blocked++;
++                  } else {
++                        m_router->get_net_ptr()->m_no_hol++;
++                  }
++                } else {
++                    // nothing here...
++                }
+             } else {
+                 // nothing here...
+-            }   
+-        } else {
+-            // nothing here...
+-        }     
++            }
++        }
+ 
+         Cycles pipe_stages = m_router->get_pipe_stages();
+         if (pipe_stages == 1) {
+@@ -171,6 +190,53 @@
+     }
+ }
+ 
++
++// check_hol_outport(int outport) to check if there's any input queue
++// with hol of same outport. if yes, then set done = 1
++void
++InputUnit::check_hol_outport(int outport) {
++    flit *f = m_vcs[0]->peekTopFlit(); // this is hol flit of curr input port
++    if (outport == f->get_outport())
++        m_router->done = 1;
++    else
++        m_router->done = 0;
++}
++
++// shuffle_inport(int inport): pick a random flit from the inport and swap
++// it with hol; thus making it HoL.
++void
++InputUnit::shuffle_inport() {
++    m_vcs[0]->rand_swap();
++}
++
++
++void
++InputUnit::swap_back(int outport) {
++    m_vcs[0]->swap(outport);
++}
++
++// check_hol_block(int outport) to check if there's any input queue which
++// is hol_blocked, if yes, swap with a flit having the same outport as in
++// the argument. Return true (done=1) if successful, else return false (done=0)
++void
++InputUnit::check_hol_block(int outport){
++    flit *f = m_vcs[0]->peekTopFlit(); // this is HoL flit...
++    int hol_outport = f->get_outport();
++    bool credit = m_router->hasCredit(hol_outport, 0); // this to check if there is hol block or not
++    if (credit == true)
++        m_router->done = 0;
++    else {
++        // there's hol-block... check for a successful swap..
++        bool result = m_vcs[0]->swap(outport);
++        if (result == true) // this means swap is successful; set done = 1
++            m_router->done = 1;
++        else // swap was unsuccessful, go to next inputport...
++            m_router->done = 0;
++    }
++
++
++}
++
+ // Send a credit back to upstream router for this VC.
+ // Called by SwitchAllocator when the flit in this VC wins the Switch.
+ void
+diff -r 64190ba08445 src/mem/ruby/network/garnet2.0/InputUnit.hh
+--- a/src/mem/ruby/network/garnet2.0/InputUnit.hh	Sun May 07 00:04:01 2017 -0400
++++ b/src/mem/ruby/network/garnet2.0/InputUnit.hh	Sun May 14 20:02:19 2017 -0400
+@@ -44,6 +44,8 @@
+ #include "mem/ruby/network/garnet2.0/Router.hh"
+ #include "mem/ruby/network/garnet2.0/VirtualChannel.hh"
+ #include "mem/ruby/network/garnet2.0/flitBuffer.hh"
++#include "mem/ruby/network/garnet2.0/OutputUnit.hh"
++
+ using namespace std;
+ 
+ class InputUnit : public Consumer
+@@ -94,19 +96,6 @@
+         return m_vcs[vc]->size();
+     }    
+ 
+-    inline void
+-    swap(int vc)
+-    {
+-        cout << "[ InputUnit.hh: " <<__LINE__ <<"] Doing Swap here" << endl;
+-        m_vcs[vc]->swap();  
+-    }
+-
+-    inline void
+-    intel_swap(int vc)
+-    {
+-        m_vcs[vc]->intel_swap();    
+-    }
+-
+     inline int
+     get_outvc(int invc)
+     {
+@@ -181,6 +170,10 @@
+ 
+     uint32_t functionalWrite(Packet *pkt);
+     void resetStats();
++    void check_hol_outport(int outport);
++    void check_hol_block(int outport);
++    void shuffle_inport();
++    void swap_back(int outport);
+ 
+   private:
+     int m_id;
+@@ -199,6 +192,7 @@
+     // Statistical variables
+     std::vector<double> m_num_buffer_writes;
+     std::vector<double> m_num_buffer_reads;
++    std::vector<OutputUnit *> m_output_unit; // using here to get the credit count
+ };
+ 
+ #endif // __MEM_RUBY_NETWORK_GARNET_INPUT_UNIT_HH__
+diff -r 64190ba08445 src/mem/ruby/network/garnet2.0/OutputUnit.cc
+--- a/src/mem/ruby/network/garnet2.0/OutputUnit.cc	Sun May 07 00:04:01 2017 -0400
++++ b/src/mem/ruby/network/garnet2.0/OutputUnit.cc	Sun May 14 20:02:19 2017 -0400
+@@ -70,6 +70,14 @@
+             m_router->get_id(), m_id, out_vc, m_router->curCycle());
+ 
+     m_outvc_state[out_vc]->decrement_credit();
++    // Implement your swap logic here..
++        if(m_router->get_net_ptr()->isEnableIntraswap()) {
++            int credit_cnt = get_credit_count(0);
++            if(credit_cnt == 0) {
++                // This is hol.. do the swap
++                m_router->doSwap(m_router->curr_outport);
++            }
++        }
+ }
+ 
+ void
+@@ -135,7 +143,18 @@
+ {
+     if (m_credit_link->isReady(m_router->curCycle())) {
+         Credit *t_credit = (Credit*) m_credit_link->consumeLink();
+-        increment_credit(t_credit->get_vc());
++        increment_credit(t_credit->get_vc()); // after increment credit count becomes 1.
++
++        // Implement your swap logic here..
++//        if(m_router->get_net_ptr()->isEnableIntraswap()) {
++//            int credit_cnt = get_credit_count(t_credit->get_vc());
++////            cout << "t_credit->get_vc(): " << t_credit->get_vc() << " credit_cnt: " << credit_cnt << endl;
++//            if (credit_cnt >= 1){ // shouldn't it be '>=' instead of '=='?
++////                assert(0);
++//                // do swapping here for the input queues..
++//                m_router->doSwap(m_router->curr_outport);
++//            }
++//        }
+ 
+         if (t_credit->is_free_signal())
+             set_vc_state(IDLE_, t_credit->get_vc(), m_router->curCycle());
+diff -r 64190ba08445 src/mem/ruby/network/garnet2.0/Router.cc
+--- a/src/mem/ruby/network/garnet2.0/Router.cc	Sun May 07 00:04:01 2017 -0400
++++ b/src/mem/ruby/network/garnet2.0/Router.cc	Sun May 14 20:02:19 2017 -0400
+@@ -98,6 +98,12 @@
+     // if we want the credit update to take place after SA, this loop should
+     // be moved after the SA request
+     for (int outport = 0; outport < m_output_unit.size(); outport++) {
++        // curr_outport = outport;
++        // Gateway to shuffle the input queue:
++//        if(get_net_ptr()->isEnableIntraswap() &&
++//                m_input_unit[outport]->get_vc_size(0) >= 1) {
++//            m_input_unit[outport]->shuffle_inport();
++//        }
+         m_output_unit[outport]->wakeup();
+     }
+     
+@@ -114,6 +120,45 @@
+     m_switch->wakeup();
+ }
+ 
++int
++Router::hasCredit(int outport, int outvc) {
++    return m_output_unit[outport]->has_credit(outvc);
++}
++
++void
++Router::doSwap(int outport) {
++    // call a function in inputunit may be to implement all the swap..
++//    done = 0;
++    for (int inport = 0; inport < m_input_unit.size(); inport++) {
++        // only if that inport's queue has size>=1
++        if (m_input_unit[inport]->get_vc_size(0) >= 1)
++        {
++            // this out port has no credit.. don't keep it at the head
++            m_input_unit[inport]->swap_back(outport); // swap it in the end in all inport queue
++//            if (done == 1){
++//                done = 0; // reset 'done'... don't need swap
++//                return;
++//            }
++        }
++    }
++//    // if control coming here than there's no hol containing the same
++//    // outport... now check if there is any inport which is blocked..
++//    // if it is blocked then swap only if there's any flit with given
++//    // outport in that queue..
++//    for (int inport = 0; inport < m_input_unit.size(); inport++) {
++//        // only if that inport's queue has size>=1
++//        if (m_input_unit[inport]->get_vc_size(0) >= 1)
++//        {
++//            m_input_unit[inport]->check_hol_block(outport);
++//            if (done == 1) { // we have been able to do a successful swap as per above conditions
++//                done = 0;
++//                return;
++//            }
++//        }
++//    }
++    return;
++}
++
+ void
+ Router::addInPort(PortDirection inport_dirn,
+                   NetworkLink *in_link, CreditLink *credit_link)
+diff -r 64190ba08445 src/mem/ruby/network/garnet2.0/Router.hh
+--- a/src/mem/ruby/network/garnet2.0/Router.hh	Sun May 07 00:04:01 2017 -0400
++++ b/src/mem/ruby/network/garnet2.0/Router.hh	Sun May 14 20:02:19 2017 -0400
+@@ -43,6 +43,7 @@
+ #include "mem/ruby/network/garnet2.0/CommonTypes.hh"
+ #include "mem/ruby/network/garnet2.0/GarnetNetwork.hh"
+ #include "mem/ruby/network/garnet2.0/flit.hh"
++#include "mem/ruby/network/garnet2.0/flitBuffer.hh"
+ #include "params/GarnetRouter.hh"
+ 
+ class NetworkLink;
+@@ -103,6 +104,8 @@
+     void collateStats();
+     void resetStats();
+ 
++    int hasCredit(int outport, int outvc);
++    void doSwap(int outport);
+     // For Fault Model:
+     bool get_fault_vector(int temperature, float fault_vector[]) {
+         return m_network_ptr->fault_model->fault_vector(m_id, temperature,
+@@ -115,7 +118,8 @@
+     }
+ 
+     uint32_t functionalWrite(Packet *);
+-
++    int curr_outport;
++    int done = 0;
+   private:
+     Cycles m_latency;
+     int m_virtual_networks, m_num_vcs, m_vc_per_vnet;
+diff -r 64190ba08445 src/mem/ruby/network/garnet2.0/SwitchAllocator.cc
+--- a/src/mem/ruby/network/garnet2.0/SwitchAllocator.cc	Sun May 07 00:04:01 2017 -0400
++++ b/src/mem/ruby/network/garnet2.0/SwitchAllocator.cc	Sun May 14 20:02:19 2017 -0400
+@@ -93,6 +93,10 @@
+ void
+ SwitchAllocator::wakeup()
+ {
++    // TODO: Do swap here..?
++    // this looks like a resonable place to do swap as all
++    // credits have been updated at the outport for this router...
++
+     arbitrate_inports(); // First stage of allocation
+     arbitrate_outports(); // Second stage of allocation
+ 
+@@ -258,6 +262,7 @@
+                     t_flit->set_vc(outvc);
+ 
+                     // decrement credit in outvc
++                    m_router->curr_outport = outport;
+                     m_output_unit[outport]->decrement_credit(outvc);
+ 
+                     // flit ready for Switch Traversal
+@@ -266,7 +271,7 @@
+                     m_output_arbiter_activity++;
+ 
+                     if ((t_flit->get_type() == TAIL_) ||
+-                            t_flit->get_type() == HEAD_TAIL_) {
++                        (t_flit->get_type() == HEAD_TAIL_)) {
+ 
+                         // This Input VC should now be empty
+                         assert(!(m_input_unit[inport]->isReady(invc,
+@@ -327,6 +332,7 @@
+ 
+ 
+                         // decrement credit in outvc
++                        m_router->curr_outport = outport;
+                         m_output_unit[outport]->decrement_credit(outvc);
+ 
+                         // flit ready for Switch Traversal
+@@ -393,22 +399,23 @@
+         }
+     } else {
+         has_credit = m_output_unit[outport]->has_credit(outvc);
+-
++//        cout << "m_output_unit["<<outport<<"]get_credit_count: "<< m_output_unit[outport]->get_credit_count (outvc) <<endl;
+         if(m_router->get_net_ptr()->isEnableWormhole() ||
+            m_router->get_net_ptr()->isEnableIntraswap()){
+ 
+-            if(has_credit == false){
+-                // you need to scan your own queue not the 'input queue of destination router'
+-                m_router->get_net_ptr()->m_hol_total++;
+-                if (m_input_unit[inport]->scan_queue(invc)){
+-                    m_router->get_net_ptr()->m_hol_avoidable++;
+-                } else {
+-                    m_router->get_net_ptr()->m_hol_blocked++;
+-                }
+-            } else {
+-                m_router->get_net_ptr()->m_no_hol++;
+-//                cout << "Remaining credit count is: "<< m_output_unit[outport]->get_credit_count(outvc) << endl;
+-            }
++//            if(has_credit == false){
++//                // you need to scan your own queue not the 'input queue of destination router'
++//                // Check: This should be done after swap.. .to check how effective is the given swap
++//                m_router->get_net_ptr()->m_hol_total++;
++//                if (m_input_unit[inport]->scan_queue(invc)){
++//                    m_router->get_net_ptr()->m_hol_avoidable++;
++//                } else {
++//                    m_router->get_net_ptr()->m_hol_blocked++; // this is wrong... it might just be avoided by swap
++//                }
++//            } else {
++//                m_router->get_net_ptr()->m_no_hol++;
++////                cout << "Remaining credit count is: "<< m_output_unit[outport]->get_credit_count(outvc) << endl;
++//            }
+         }
+     }
+ 
+diff -r 64190ba08445 src/mem/ruby/network/garnet2.0/VirtualChannel.hh
+--- a/src/mem/ruby/network/garnet2.0/VirtualChannel.hh	Sun May 07 00:04:01 2017 -0400
++++ b/src/mem/ruby/network/garnet2.0/VirtualChannel.hh	Sun May 14 20:02:19 2017 -0400
+@@ -79,11 +79,11 @@
+     {
+         return m_input_buffer->isThreshold(threshold);
+     }
+-    inline void
+-    swap()
++    inline bool
++    swap(int outport)
+     {
+-        cout << "[ VirtualChannel.hh: " <<__LINE__ <<"] Doing Swap here" << endl;
+-        m_input_buffer->swap();
++//        cout << "[ VirtualChannel.hh: " <<__LINE__ <<"] Doing Swap here" << endl;
++        return m_input_buffer->swap(outport);
+     }
+ 
+     inline void
+@@ -92,6 +92,18 @@
+         m_input_buffer->intel_swap();
+     }
+ 
++    inline void
++    tail_swap()
++    {
++        m_input_buffer->tail_swap();
++    }
++
++    inline void
++    rand_swap()
++    {
++        m_input_buffer->rand_swap();
++    }
++
+     bool
+     scan_queue()
+     {
+diff -r 64190ba08445 src/mem/ruby/network/garnet2.0/flitBuffer.cc
+--- a/src/mem/ruby/network/garnet2.0/flitBuffer.cc	Sun May 07 00:04:01 2017 -0400
++++ b/src/mem/ruby/network/garnet2.0/flitBuffer.cc	Sun May 14 20:02:19 2017 -0400
+@@ -56,49 +56,77 @@
+     return (max_size - m_buffer.size());
+ }
+ 
+-void
+-flitBuffer::swap()
++bool
++flitBuffer::swap(int outport)
+ {
+     //Do swapping here
+-    cout << "[ flitBuffer.cc: " <<__LINE__ <<"] Doing Swap here" << endl;
+-    int pos = m_buffer.size();
+-    iter_swap(m_buffer.begin(), m_buffer.begin()+(pos-1));  
++//    cout << "[ flitBuffer.cc: " <<__LINE__ <<"] Doing Swap here" << endl;
++//    int pos = m_buffer.size();
++//    iter_swap(m_buffer.begin(), m_buffer.begin()+(pos-1));
++    // scan through all the flits in the queue...
++    for (std::vector<flit *>::iterator i = m_buffer.begin(); i != m_buffer.end(); ++i) {
++        if((*i)->get_outport() == outport) {
++            // do the swap...
++//            if((*(m_buffer.end()-1))->get_outport() != outport)
++                iter_swap(m_buffer.end()-1, i);
++            return true;
++        }
++    }
++    return false;
+ }
+ 
+ void
++flitBuffer::rand_swap()
++{
++    // Randomly pic any position and swap it with HoL
++    int pos = random() % m_buffer.size();
++    std::vector<flit *>::iterator i = m_buffer.begin() + pos;
++    iter_swap(m_buffer.begin(), i);
++    return;
++}
++
++// TODO: Only swap when there is no credit available fo that port
++// Don't do it instead of reaching the threshold...
++// That is, don't call this function as the flit as coming....
++void
+ flitBuffer::intel_swap()
+ {
+     // Parse through the buffer and do swap of HoL
+     // with the first one having Outport different
+     // then HoL
+-    for (std::vector<flit *>::iterator i = m_buffer.begin(); i != m_buffer.end(); ++i) {
++//    for (std::vector<flit *>::iterator i = m_buffer.begin(); i != m_buffer.end(); ++i) {
++//        if((*i)->get_outport() != m_buffer.front()->get_outport()) {
++//            int pos = i - m_buffer.begin();
++//            iter_swap(m_buffer.begin(), m_buffer.begin()+(pos));
++//            return; // you have done the swapping.. Just return.
++//        }
++//    }
++
++    // We should instead parse through buffer from its tail to head... and if
++    // we find a flit whose outport is different than HoL then do the swap!
++
++    for (std::vector<flit *>::iterator i = m_buffer.end()-1; i >= m_buffer.begin(); --i) {
+         if((*i)->get_outport() != m_buffer.front()->get_outport()) {
+-            // Removing this for now
+-            //if((*i)->get_outport()== 5/*UNKNOWN_*/) {
+-                //continue;
+-            //}
+-            // cout<< "(*i)->get_outport(): " << (*i)->get_outport()<<"  m_buffer.front()->get_outport(): " << m_buffer.front()->get_outport() << endl;
++            //TODO: How to find the correct position... current logic looks fine...
+             int pos = i - m_buffer.begin();
+-            // cout << "at position: " << pos << endl;
+-            // assert(0);
+             iter_swap(m_buffer.begin(), m_buffer.begin()+(pos));
+-            // cout << "m_buffer.front()->get_outport(): "  << m_buffer.front()->get_outport() << endl;
+-            // assert(0);
+-            return; // you have done the swapping.. Just return.            
++            return; // you have done the swapping.. Just return.
+         }
+     }
+-    // If control comes to this place it means that we have parsed the whole buffer and there is no flit
+-    // whoes outport is different then the one at HoL, which is stuck....
+-    // In some sense you have detected the deadlock.. could be used for deadlock detection
+-    // if(m_buffer.size() == 4) { // the buffer is full with all flits pointing to same destination
+-        // cout << "m_buffer.front()->get_outport(): " << m_buffer.front()->get_outport(); 
+-        // assert(0);
+-    // } 
++}
++
++
++void
++flitBuffer::tail_swap()
++{
++   // swap the head of the queue with its tail. No loop required.
++    iter_swap(m_buffer.begin(), m_buffer.end()-1); // this is for swapping tail and head
+ }
+ 
+ bool
+ flitBuffer::scan_queue()
+ {
++    // Note: I think below logic is not correct to determine HoL
+     // Parse through the buffer and return true
+     // if there's any packet whoes outport is
+     // different than the HoL.
+@@ -107,7 +135,7 @@
+             return (true);
+         }
+     }
+-    // if control comes here.. it hasn't find any packet which
++    // if control comes here.. it hasn't found any packet which
+     // has outport different than HoL.
+     return (false);
+ }
+diff -r 64190ba08445 src/mem/ruby/network/garnet2.0/flitBuffer.hh
+--- a/src/mem/ruby/network/garnet2.0/flitBuffer.hh	Sun May 07 00:04:01 2017 -0400
++++ b/src/mem/ruby/network/garnet2.0/flitBuffer.hh	Sun May 14 20:02:19 2017 -0400
+@@ -40,6 +40,8 @@
+ 
+ #include "mem/ruby/network/garnet2.0/CommonTypes.hh"
+ #include "mem/ruby/network/garnet2.0/flit.hh"
++#include "mem/ruby/network/garnet2.0/Router.hh"
++#include "mem/ruby/network/garnet2.0/OutVcState.hh"
+ 
+ class flitBuffer
+ {
+@@ -53,10 +55,11 @@
+     bool isFull();
+     bool isThreshold(int threshold);
+     void setMaxSize(int maximum);
+-    void swap();
++    bool swap(int outport);
+     void intel_swap();  
++    void tail_swap();
++    void rand_swap();
+     bool scan_queue();
+-
+     int bufferSizeLeft();
+ 
+     flit *
+@@ -92,6 +95,8 @@
+   private:
+     std::vector<flit *> m_buffer;
+     int max_size;
++//    std::vector<OutputUnit *> m_output_unit; // using here to get the credit count
++//    std::vector<OutVcState *> m_outvc_state; // vc state of downstream router
+ };
+ 
+ inline std::ostream&

@@ -1,0 +1,13 @@
+[paths]
+default = http://repo.gem5.org/gem5
+
+# The following lines were automatically added by gem5/SConstruct
+# to provide the gem5 style-checking hooks
+[extensions]
+hgstyle = /usr/scratch/mayank/swapnoc_gem5/swapnoc_credit_swap/gem5/util/hgstyle.py
+
+[hooks]
+pretxncommit.style = python:hgstyle.check_style
+pre-qrefresh.style = python:hgstyle.check_style
+# End of SConstruct additions
+

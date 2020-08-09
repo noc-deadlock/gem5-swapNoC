@@ -1,0 +1,582 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+ACTIVE_	CommonTypes.hh	/^enum VC_state_type {IDLE_, VC_AB_, ACTIVE_, NUM_VC_STATE_TYPE_};$/;"	e	enum:VC_state_type
+BODY_	CommonTypes.hh	/^enum flit_type {HEAD_, BODY_, TAIL_, HEAD_TAIL_, NUM_FLIT_TYPE_};$/;"	e	enum:flit_type
+BasicExtLink	GarnetLink.py	/^from BasicLink import BasicIntLink, BasicExtLink$/;"	i
+BasicIntLink	GarnetLink.py	/^from BasicLink import BasicIntLink, BasicExtLink$/;"	i
+BasicRouter	GarnetNetwork.py	/^from BasicRouter import BasicRouter$/;"	i
+CTRL_VNET_	CommonTypes.hh	/^enum VNET_type {CTRL_VNET_, DATA_VNET_, NULL_VNET_, NUM_VNET_TYPE_};$/;"	e	enum:VNET_type
+CUSTOM_	CommonTypes.hh	/^enum RoutingAlgorithm { TABLE_ = 0, XY_ = 1, RANDOM_  = 2, CUSTOM_ = 3,$/;"	e	enum:RoutingAlgorithm
+ClockedObject	GarnetLink.py	/^from ClockedObject import ClockedObject$/;"	i
+ClockedObject	GarnetNetwork.py	/^from ClockedObject import ClockedObject$/;"	i
+Credit	Credit.cc	/^Credit::Credit(int vc, bool is_free_signal, Cycles curTime)$/;"	f	class:Credit
+Credit	Credit.hh	/^    Credit() {};$/;"	f	class:Credit
+Credit	Credit.hh	/^class Credit : public flit$/;"	c
+CreditLink	CreditLink.hh	/^    CreditLink(const Params *p) : NetworkLink(p) {}$/;"	f	class:CreditLink
+CreditLink	CreditLink.hh	/^class CreditLink : public NetworkLink$/;"	c
+CreditLink	GarnetLink.py	/^class CreditLink(NetworkLink):$/;"	c
+CrossbarSwitch	CrossbarSwitch.cc	/^CrossbarSwitch::CrossbarSwitch(Router *router)$/;"	f	class:CrossbarSwitch
+CrossbarSwitch	CrossbarSwitch.hh	/^class CrossbarSwitch : public Consumer$/;"	c
+DATA_VNET_	CommonTypes.hh	/^enum VNET_type {CTRL_VNET_, DATA_VNET_, NULL_VNET_, NUM_VNET_TYPE_};$/;"	e	enum:VNET_type
+EXT_IN_	CommonTypes.hh	/^enum link_type { EXT_IN_, EXT_OUT_, INT_, NUM_LINK_TYPES_ };$/;"	e	enum:link_type
+EXT_OUT_	CommonTypes.hh	/^enum link_type { EXT_IN_, EXT_OUT_, INT_, NUM_LINK_TYPES_ };$/;"	e	enum:link_type
+GarnetExtLink	GarnetLink.cc	/^GarnetExtLink::GarnetExtLink(const Params *p)$/;"	f	class:GarnetExtLink
+GarnetExtLink	GarnetLink.hh	/^class GarnetExtLink : public BasicLink$/;"	c
+GarnetExtLink	GarnetLink.py	/^class GarnetExtLink(BasicExtLink):$/;"	c
+GarnetIntLink	GarnetLink.cc	/^GarnetIntLink::GarnetIntLink(const Params *p)$/;"	f	class:GarnetIntLink
+GarnetIntLink	GarnetLink.hh	/^class GarnetIntLink : public BasicLink$/;"	c
+GarnetIntLink	GarnetLink.py	/^class GarnetIntLink(BasicIntLink):$/;"	c
+GarnetNetwork	GarnetNetwork.cc	/^GarnetNetwork::GarnetNetwork(const Params *p)$/;"	f	class:GarnetNetwork
+GarnetNetwork	GarnetNetwork.hh	/^class GarnetNetwork : public Network$/;"	c
+GarnetNetwork	GarnetNetwork.py	/^class GarnetNetwork(RubyNetwork):$/;"	c
+GarnetNetworkInterface	GarnetNetwork.py	/^class GarnetNetworkInterface(ClockedObject):$/;"	c
+GarnetRouter	GarnetNetwork.py	/^class GarnetRouter(BasicRouter):$/;"	c
+HEAD_	CommonTypes.hh	/^enum flit_type {HEAD_, BODY_, TAIL_, HEAD_TAIL_, NUM_FLIT_TYPE_};$/;"	e	enum:flit_type
+HEAD_TAIL_	CommonTypes.hh	/^enum flit_type {HEAD_, BODY_, TAIL_, HEAD_TAIL_, NUM_FLIT_TYPE_};$/;"	e	enum:flit_type
+IDLE_	CommonTypes.hh	/^enum VC_state_type {IDLE_, VC_AB_, ACTIVE_, NUM_VC_STATE_TYPE_};$/;"	e	enum:VC_state_type
+INFINITE_	CommonTypes.hh	63;"	d
+INT_	CommonTypes.hh	/^enum link_type { EXT_IN_, EXT_OUT_, INT_, NUM_LINK_TYPES_ };$/;"	e	enum:link_type
+I_	CommonTypes.hh	/^enum flit_stage {I_, VA_, SA_, ST_, LT_, NUM_FLIT_STAGE_};$/;"	e	enum:flit_stage
+InputUnit	InputUnit.cc	/^InputUnit::InputUnit(int id, PortDirection direction, Router *router)$/;"	f	class:InputUnit
+InputUnit	InputUnit.hh	/^class InputUnit : public Consumer$/;"	c
+LT_	CommonTypes.hh	/^enum flit_stage {I_, VA_, SA_, ST_, LT_, NUM_FLIT_STAGE_};$/;"	e	enum:flit_stage
+NULL_VNET_	CommonTypes.hh	/^enum VNET_type {CTRL_VNET_, DATA_VNET_, NULL_VNET_, NUM_VNET_TYPE_};$/;"	e	enum:VNET_type
+NUM_FLIT_STAGE_	CommonTypes.hh	/^enum flit_stage {I_, VA_, SA_, ST_, LT_, NUM_FLIT_STAGE_};$/;"	e	enum:flit_stage
+NUM_FLIT_TYPE_	CommonTypes.hh	/^enum flit_type {HEAD_, BODY_, TAIL_, HEAD_TAIL_, NUM_FLIT_TYPE_};$/;"	e	enum:flit_type
+NUM_LINK_TYPES_	CommonTypes.hh	/^enum link_type { EXT_IN_, EXT_OUT_, INT_, NUM_LINK_TYPES_ };$/;"	e	enum:link_type
+NUM_ROUTING_ALGORITHM_	CommonTypes.hh	/^                        NUM_ROUTING_ALGORITHM_};$/;"	e	enum:RoutingAlgorithm
+NUM_VC_STATE_TYPE_	CommonTypes.hh	/^enum VC_state_type {IDLE_, VC_AB_, ACTIVE_, NUM_VC_STATE_TYPE_};$/;"	e	enum:VC_state_type
+NUM_VNET_TYPE_	CommonTypes.hh	/^enum VNET_type {CTRL_VNET_, DATA_VNET_, NULL_VNET_, NUM_VNET_TYPE_};$/;"	e	enum:VNET_type
+NetworkInterface	NetworkInterface.cc	/^NetworkInterface::NetworkInterface(const Params *p)$/;"	f	class:NetworkInterface
+NetworkInterface	NetworkInterface.hh	/^class NetworkInterface : public ClockedObject, public Consumer$/;"	c
+NetworkLink	GarnetLink.py	/^class NetworkLink(ClockedObject):$/;"	c
+NetworkLink	NetworkLink.cc	/^NetworkLink::NetworkLink(const Params *p)$/;"	f	class:NetworkLink
+NetworkLink	NetworkLink.hh	/^class NetworkLink : public ClockedObject, public Consumer$/;"	c
+OutVcState	OutVcState.cc	/^OutVcState::OutVcState(int id, GarnetNetwork *network_ptr)$/;"	f	class:OutVcState
+OutVcState	OutVcState.hh	/^class OutVcState$/;"	c
+OutputUnit	OutputUnit.cc	/^OutputUnit::OutputUnit(int id, PortDirection direction, Router *router)$/;"	f	class:OutputUnit
+OutputUnit	OutputUnit.hh	/^class OutputUnit : public Consumer$/;"	c
+Params	CreditLink.hh	/^    typedef CreditLinkParams Params;$/;"	t	class:CreditLink
+Params	GarnetLink.hh	/^    typedef GarnetExtLinkParams Params;$/;"	t	class:GarnetExtLink
+Params	GarnetLink.hh	/^    typedef GarnetIntLinkParams Params;$/;"	t	class:GarnetIntLink
+Params	GarnetNetwork.hh	/^    typedef GarnetNetworkParams Params;$/;"	t	class:GarnetNetwork
+Params	NetworkInterface.hh	/^    typedef GarnetNetworkInterfaceParams Params;$/;"	t	class:NetworkInterface
+Params	NetworkLink.hh	/^    typedef NetworkLinkParams Params;$/;"	t	class:NetworkLink
+Params	Router.hh	/^    typedef GarnetRouterParams Params;$/;"	t	class:Router
+RANDOM_	CommonTypes.hh	/^enum RoutingAlgorithm { TABLE_ = 0, XY_ = 1, RANDOM_  = 2, CUSTOM_ = 3,$/;"	e	enum:RoutingAlgorithm
+RouteInfo	CommonTypes.hh	/^struct RouteInfo$/;"	s
+Router	Router.cc	/^Router::Router(const Params *p)$/;"	f	class:Router
+Router	Router.hh	/^class Router : public BasicRouter, public Consumer$/;"	c
+RoutingAlgorithm	CommonTypes.hh	/^enum RoutingAlgorithm { TABLE_ = 0, XY_ = 1, RANDOM_  = 2, CUSTOM_ = 3,$/;"	g
+RoutingUnit	RoutingUnit.cc	/^RoutingUnit::RoutingUnit(Router *router)$/;"	f	class:RoutingUnit
+RoutingUnit	RoutingUnit.hh	/^class RoutingUnit$/;"	c
+RubyNetwork	GarnetNetwork.py	/^from Network import RubyNetwork$/;"	i
+SA_	CommonTypes.hh	/^enum flit_stage {I_, VA_, SA_, ST_, LT_, NUM_FLIT_STAGE_};$/;"	e	enum:flit_stage
+ST_	CommonTypes.hh	/^enum flit_stage {I_, VA_, SA_, ST_, LT_, NUM_FLIT_STAGE_};$/;"	e	enum:flit_stage
+SwitchAllocator	SwitchAllocator.cc	/^SwitchAllocator::SwitchAllocator(Router *router)$/;"	f	class:SwitchAllocator
+SwitchAllocator	SwitchAllocator.hh	/^class SwitchAllocator : public Consumer$/;"	c
+TABLE_	CommonTypes.hh	/^enum RoutingAlgorithm { TABLE_ = 0, XY_ = 1, RANDOM_  = 2, CUSTOM_ = 3,$/;"	e	enum:RoutingAlgorithm
+TAIL_	CommonTypes.hh	/^enum flit_type {HEAD_, BODY_, TAIL_, HEAD_TAIL_, NUM_FLIT_TYPE_};$/;"	e	enum:flit_type
+VA_	CommonTypes.hh	/^enum flit_stage {I_, VA_, SA_, ST_, LT_, NUM_FLIT_STAGE_};$/;"	e	enum:flit_stage
+VC_AB_	CommonTypes.hh	/^enum VC_state_type {IDLE_, VC_AB_, ACTIVE_, NUM_VC_STATE_TYPE_};$/;"	e	enum:VC_state_type
+VC_state_type	CommonTypes.hh	/^enum VC_state_type {IDLE_, VC_AB_, ACTIVE_, NUM_VC_STATE_TYPE_};$/;"	g
+VNET_type	CommonTypes.hh	/^enum VNET_type {CTRL_VNET_, DATA_VNET_, NULL_VNET_, NUM_VNET_TYPE_};$/;"	g
+VirtualChannel	VirtualChannel.cc	/^VirtualChannel::VirtualChannel(int id)$/;"	f	class:VirtualChannel
+VirtualChannel	VirtualChannel.hh	/^class VirtualChannel$/;"	c
+XY_	CommonTypes.hh	/^enum RoutingAlgorithm { TABLE_ = 0, XY_ = 1, RANDOM_  = 2, CUSTOM_ = 3,$/;"	e	enum:RoutingAlgorithm
+__MEM_RUBY_NETWORK_GARNET_COMMONTYPES_HH__	CommonTypes.hh	35;"	d
+__MEM_RUBY_NETWORK_GARNET_CREDIT_HH__	Credit.hh	35;"	d
+__MEM_RUBY_NETWORK_GARNET_CREDIT_LINK_HH__	CreditLink.hh	35;"	d
+__MEM_RUBY_NETWORK_GARNET_CROSSBAR_SWITCH_HH__	CrossbarSwitch.hh	35;"	d
+__MEM_RUBY_NETWORK_GARNET_FLIT_BUFFER_HH__	flitBuffer.hh	35;"	d
+__MEM_RUBY_NETWORK_GARNET_FLIT_HH__	flit.hh	35;"	d
+__MEM_RUBY_NETWORK_GARNET_INPUT_UNIT_HH__	InputUnit.hh	35;"	d
+__MEM_RUBY_NETWORK_GARNET_LINK_HH__	GarnetLink.hh	35;"	d
+__MEM_RUBY_NETWORK_GARNET_NETWORK_HH__	GarnetNetwork.hh	35;"	d
+__MEM_RUBY_NETWORK_GARNET_NETWORK_INTERFACE_HH__	NetworkInterface.hh	35;"	d
+__MEM_RUBY_NETWORK_GARNET_NETWORK_LINK_HH__	NetworkLink.hh	35;"	d
+__MEM_RUBY_NETWORK_GARNET_OUTPUT_UNIT_HH__	OutputUnit.hh	35;"	d
+__MEM_RUBY_NETWORK_GARNET_OUTVC_STATE_HH__	OutVcState.hh	35;"	d
+__MEM_RUBY_NETWORK_GARNET_ROUTER_HH__	Router.hh	35;"	d
+__MEM_RUBY_NETWORK_GARNET_ROUTING_UNIT_HH__	RoutingUnit.hh	35;"	d
+__MEM_RUBY_NETWORK_GARNET_SWITCH_ALLOCATOR_HH__	SwitchAllocator.hh	35;"	d
+__MEM_RUBY_NETWORK_GARNET_VIRTUAL_CHANNEL_HH__	VirtualChannel.hh	35;"	d
+_cls	GarnetLink.py	/^    _cls = []$/;"	v	class:GarnetExtLink
+_nls	GarnetLink.py	/^    _nls = []$/;"	v	class:GarnetExtLink
+addInDirection	RoutingUnit.cc	/^RoutingUnit::addInDirection(PortDirection inport_dirn, int inport_idx)$/;"	f	class:RoutingUnit
+addInPort	NetworkInterface.cc	/^NetworkInterface::addInPort(NetworkLink *in_link,$/;"	f	class:NetworkInterface
+addInPort	Router.cc	/^Router::addInPort(PortDirection inport_dirn,$/;"	f	class:Router
+addNode	NetworkInterface.cc	/^NetworkInterface::addNode(vector<MessageBuffer *>& in,$/;"	f	class:NetworkInterface
+addOutDirection	RoutingUnit.cc	/^RoutingUnit::addOutDirection(PortDirection outport_dirn, int outport_idx)$/;"	f	class:RoutingUnit
+addOutPort	NetworkInterface.cc	/^NetworkInterface::addOutPort(NetworkLink *out_link,$/;"	f	class:NetworkInterface
+addOutPort	Router.cc	/^Router::addOutPort(PortDirection outport_dirn,$/;"	f	class:Router
+addRoute	RoutingUnit.cc	/^RoutingUnit::addRoute(const NetDest& routing_table_entry)$/;"	f	class:RoutingUnit
+addWeight	RoutingUnit.cc	/^RoutingUnit::addWeight(int link_weight)$/;"	f	class:RoutingUnit
+advance_stage	flit.hh	/^    advance_stage(flit_stage t_stage, Cycles newTime)$/;"	f	class:flit
+arbitrate_inports	SwitchAllocator.cc	/^SwitchAllocator::arbitrate_inports()$/;"	f	class:SwitchAllocator
+arbitrate_outports	SwitchAllocator.cc	/^SwitchAllocator::arbitrate_outports()$/;"	f	class:SwitchAllocator
+bufferSizeLeft	flitBuffer.cc	/^flitBuffer::bufferSizeLeft()$/;"	f	class:flitBuffer
+buffers_per_ctrl_vc	GarnetNetwork.py	/^    buffers_per_ctrl_vc = Param.UInt32(1, "buffers per ctrl virtual channel");$/;"	v	class:GarnetNetwork
+buffers_per_data_vc	GarnetNetwork.py	/^    buffers_per_data_vc = Param.UInt32(4, "buffers per data virtual channel");$/;"	v	class:GarnetNetwork
+calculateVC	NetworkInterface.cc	/^NetworkInterface::calculateVC(int vnet)$/;"	f	class:NetworkInterface
+checkReschedule	NetworkInterface.cc	/^NetworkInterface::checkReschedule()$/;"	f	class:NetworkInterface
+check_for_wakeup	SwitchAllocator.cc	/^SwitchAllocator::check_for_wakeup()$/;"	f	class:SwitchAllocator
+clear_request_vector	SwitchAllocator.cc	/^SwitchAllocator::clear_request_vector()$/;"	f	class:SwitchAllocator
+collateStats	GarnetNetwork.cc	/^GarnetNetwork::collateStats()$/;"	f	class:GarnetNetwork
+collateStats	Router.cc	/^Router::collateStats()$/;"	f	class:Router
+consumeLink	NetworkLink.hh	/^    inline flit* consumeLink()    { return linkBuffer->getTopFlit(); }$/;"	f	class:NetworkLink
+create	GarnetLink.cc	/^GarnetExtLinkParams::create()$/;"	f	class:GarnetExtLinkParams
+create	GarnetLink.cc	/^GarnetIntLinkParams::create()$/;"	f	class:GarnetIntLinkParams
+create	GarnetNetwork.cc	/^GarnetNetworkParams::create()$/;"	f	class:GarnetNetworkParams
+create	NetworkInterface.cc	/^GarnetNetworkInterfaceParams::create()$/;"	f	class:GarnetNetworkInterfaceParams
+create	NetworkLink.cc	/^CreditLinkParams::create()$/;"	f	class:CreditLinkParams
+create	NetworkLink.cc	/^NetworkLinkParams::create()$/;"	f	class:NetworkLinkParams
+create	Router.cc	/^GarnetRouterParams::create()$/;"	f	class:GarnetRouterParams
+creditQueue	InputUnit.hh	/^    flitBuffer *creditQueue;$/;"	m	class:InputUnit
+credit_link	GarnetLink.py	/^    credit_link  = Param.CreditLink(CreditLink(), "backward flow-control link")$/;"	v	class:GarnetIntLink
+credit_links	GarnetLink.py	/^    credit_links = VectorParam.CreditLink(_cls, "backward flow-control links")$/;"	v	class:GarnetExtLink
+cxx_class	GarnetNetwork.py	/^    cxx_class = 'NetworkInterface'$/;"	v	class:GarnetNetworkInterface
+cxx_class	GarnetNetwork.py	/^    cxx_class = 'Router'$/;"	v	class:GarnetRouter
+cxx_header	GarnetLink.py	/^    cxx_header = "mem\/ruby\/network\/garnet2.0\/CreditLink.hh"$/;"	v	class:CreditLink
+cxx_header	GarnetLink.py	/^    cxx_header = "mem\/ruby\/network\/garnet2.0\/GarnetLink.hh"$/;"	v	class:GarnetExtLink
+cxx_header	GarnetLink.py	/^    cxx_header = "mem\/ruby\/network\/garnet2.0\/GarnetLink.hh"$/;"	v	class:GarnetIntLink
+cxx_header	GarnetLink.py	/^    cxx_header = "mem\/ruby\/network\/garnet2.0\/NetworkLink.hh"$/;"	v	class:NetworkLink
+cxx_header	GarnetNetwork.py	/^    cxx_header = "mem\/ruby\/network\/garnet2.0\/GarnetNetwork.hh"$/;"	v	class:GarnetNetwork
+cxx_header	GarnetNetwork.py	/^    cxx_header = "mem\/ruby\/network\/garnet2.0\/NetworkInterface.hh"$/;"	v	class:GarnetNetworkInterface
+cxx_header	GarnetNetwork.py	/^    cxx_header = "mem\/ruby\/network\/garnet2.0\/Router.hh"$/;"	v	class:GarnetRouter
+decrement_credit	OutVcState.cc	/^OutVcState::decrement_credit()$/;"	f	class:OutVcState
+decrement_credit	OutputUnit.cc	/^OutputUnit::decrement_credit(int out_vc)$/;"	f	class:OutputUnit
+dest_ni	CommonTypes.hh	/^    int dest_ni;$/;"	m	struct:RouteInfo
+dest_router	CommonTypes.hh	/^    int dest_router;$/;"	m	struct:RouteInfo
+enable_fault_model	GarnetNetwork.py	/^    enable_fault_model = Param.Bool(False, "enable network fault model");$/;"	v	class:GarnetNetwork
+enable_intraswap	GarnetNetwork.py	/^    enable_intraswap = Param.UInt32(0, "To enable the intraswap");$/;"	v	class:GarnetNetwork
+enable_intraswap	GarnetNetwork.py	/^    enable_intraswap = Param.UInt32(Parent.enable_intraswap,$/;"	v	class:GarnetNetworkInterface
+enable_intraswap	GarnetNetwork.py	/^    enable_intraswap = Param.UInt32(Parent.enable_intraswap,$/;"	v	class:GarnetRouter
+enable_wormhole	GarnetNetwork.py	/^    enable_wormhole = Param.UInt32(0, "To enable the wormhole routing");$/;"	v	class:GarnetNetwork
+enable_wormhole	GarnetNetwork.py	/^    enable_wormhole = Param.UInt32(Parent.enable_wormhole,$/;"	v	class:GarnetNetworkInterface
+enable_wormhole	GarnetNetwork.py	/^    enable_wormhole = Param.UInt32(Parent.enable_wormhole,$/;"	v	class:GarnetRouter
+fault_model	GarnetNetwork.hh	/^    FaultModel* fault_model;$/;"	m	class:GarnetNetwork
+fault_model	GarnetNetwork.py	/^    fault_model = Param.FaultModel(NULL, "network fault model");$/;"	v	class:GarnetNetwork
+flit	flit.cc	/^flit::flit(int id, int  vc, int vnet, RouteInfo route, int size,$/;"	f	class:flit
+flit	flit.hh	/^    flit() {}$/;"	f	class:flit
+flit	flit.hh	/^class flit$/;"	c
+flitBuffer	flitBuffer.cc	/^flitBuffer::flitBuffer()$/;"	f	class:flitBuffer
+flitBuffer	flitBuffer.cc	/^flitBuffer::flitBuffer(int maximum_size)$/;"	f	class:flitBuffer
+flitBuffer	flitBuffer.hh	/^class flitBuffer$/;"	c
+flit_stage	CommonTypes.hh	/^enum flit_stage {I_, VA_, SA_, ST_, LT_, NUM_FLIT_STAGE_};$/;"	g
+flit_type	CommonTypes.hh	/^enum flit_type {HEAD_, BODY_, TAIL_, HEAD_TAIL_, NUM_FLIT_TYPE_};$/;"	g
+flitisizeMessage	NetworkInterface.cc	/^NetworkInterface::flitisizeMessage(MsgPtr msg_ptr, int msg_vnet)$/;"	f	class:NetworkInterface
+functionalWrite	CrossbarSwitch.cc	/^CrossbarSwitch::functionalWrite(Packet *pkt)$/;"	f	class:CrossbarSwitch
+functionalWrite	GarnetNetwork.cc	/^GarnetNetwork::functionalWrite(Packet *pkt)$/;"	f	class:GarnetNetwork
+functionalWrite	InputUnit.cc	/^InputUnit::functionalWrite(Packet *pkt)$/;"	f	class:InputUnit
+functionalWrite	NetworkInterface.cc	/^NetworkInterface::functionalWrite(Packet *pkt)$/;"	f	class:NetworkInterface
+functionalWrite	NetworkLink.cc	/^NetworkLink::functionalWrite(Packet *pkt)$/;"	f	class:NetworkLink
+functionalWrite	OutputUnit.cc	/^OutputUnit::functionalWrite(Packet *pkt)$/;"	f	class:OutputUnit
+functionalWrite	Router.cc	/^Router::functionalWrite(Packet *pkt)$/;"	f	class:Router
+functionalWrite	VirtualChannel.cc	/^VirtualChannel::functionalWrite(Packet *pkt)$/;"	f	class:VirtualChannel
+functionalWrite	flit.cc	/^flit::functionalWrite(Packet *pkt)$/;"	f	class:flit
+functionalWrite	flitBuffer.cc	/^flitBuffer::functionalWrite(Packet *pkt)$/;"	f	class:flitBuffer
+getBuffersPerCtrlVC	GarnetNetwork.hh	/^    uint32_t getBuffersPerCtrlVC() { return m_buffers_per_ctrl_vc; }$/;"	f	class:GarnetNetwork
+getBuffersPerDataVC	GarnetNetwork.hh	/^    uint32_t getBuffersPerDataVC() { return m_buffers_per_data_vc; }$/;"	f	class:GarnetNetwork
+getCreditQueue	InputUnit.hh	/^    flitBuffer* getCreditQueue() { return creditQueue; }$/;"	f	class:InputUnit
+getInportDirection	Router.cc	/^Router::getInportDirection(int inport)$/;"	f	class:Router
+getLinkUtilization	NetworkLink.hh	/^    unsigned int getLinkUtilization() const { return m_link_utilized; }$/;"	f	class:NetworkLink
+getNiFlitSize	GarnetNetwork.hh	/^    uint32_t getNiFlitSize() const { return m_ni_flit_size; }$/;"	f	class:GarnetNetwork
+getNumCols	GarnetNetwork.hh	/^    int getNumCols() { return m_num_cols; }$/;"	f	class:GarnetNetwork
+getNumRouters	GarnetNetwork.cc	/^GarnetNetwork::getNumRouters()$/;"	f	class:GarnetNetwork
+getNumRows	GarnetNetwork.hh	/^    int getNumRows() const { return m_num_rows; }$/;"	f	class:GarnetNetwork
+getOutQueue	OutputUnit.cc	/^OutputUnit::getOutQueue()$/;"	f	class:OutputUnit
+getOutportDirection	Router.cc	/^Router::getOutportDirection(int outport)$/;"	f	class:Router
+getPortDirectionName	Router.cc	/^Router::getPortDirectionName(PortDirection direction)$/;"	f	class:Router
+getRoutingAlgorithm	GarnetNetwork.hh	/^    int getRoutingAlgorithm() const { return m_routing_algorithm; }$/;"	f	class:GarnetNetwork
+getTopFlit	InputUnit.hh	/^    getTopFlit(int vc)$/;"	f	class:InputUnit
+getTopFlit	VirtualChannel.hh	/^    getTopFlit()$/;"	f	class:VirtualChannel
+getTopFlit	flitBuffer.hh	/^    getTopFlit()$/;"	f	class:flitBuffer
+getType	NetworkLink.hh	/^    link_type getType() { return m_type; }$/;"	f	class:NetworkLink
+getVCsPerVnet	GarnetNetwork.hh	/^    uint32_t getVCsPerVnet() const { return m_vcs_per_vnet; }$/;"	f	class:GarnetNetwork
+getVcLoad	NetworkLink.hh	/^    const std::vector<unsigned int> & getVcLoad() const { return m_vc_load; }$/;"	f	class:NetworkLink
+get_aggregate_fault_probability	Router.hh	/^    bool get_aggregate_fault_probability(int temperature,$/;"	f	class:Router
+get_buf_read_activity	InputUnit.hh	/^    double get_buf_read_activity(unsigned int vnet) const$/;"	f	class:InputUnit
+get_buf_write_activity	InputUnit.hh	/^    double get_buf_write_activity(unsigned int vnet) const$/;"	f	class:InputUnit
+get_credit_count	OutVcState.hh	/^    int get_credit_count()          { return m_credit_count; }$/;"	f	class:OutVcState
+get_credit_count	OutputUnit.hh	/^    get_credit_count(int vc)$/;"	f	class:OutputUnit
+get_crossbar_activity	CrossbarSwitch.hh	/^    inline double get_crossbar_activity() { return m_crossbar_activity; }$/;"	f	class:CrossbarSwitch
+get_direction	InputUnit.hh	/^    inline PortDirection get_direction() { return m_direction; }$/;"	f	class:InputUnit
+get_direction	OutputUnit.hh	/^    inline PortDirection get_direction() { return m_direction; }$/;"	f	class:OutputUnit
+get_enqueue_time	InputUnit.hh	/^    get_enqueue_time(int invc)$/;"	f	class:InputUnit
+get_enqueue_time	VirtualChannel.hh	/^    inline Cycles get_enqueue_time()          { return m_enqueue_time; }$/;"	f	class:VirtualChannel
+get_enqueue_time	flit.hh	/^    Cycles get_enqueue_time() { return m_enqueue_time; }$/;"	f	class:flit
+get_fault_vector	Router.hh	/^    bool get_fault_vector(int temperature, float fault_vector[]) {$/;"	f	class:Router
+get_id	NetworkLink.hh	/^    int get_id() const { return m_id; }$/;"	f	class:NetworkLink
+get_id	Router.hh	/^    int get_id()            { return m_id; }$/;"	f	class:Router
+get_id	flit.hh	/^    int get_id() { return m_id; }$/;"	f	class:flit
+get_inlink_id	InputUnit.hh	/^    inline int get_inlink_id() { return m_in_link->get_id(); }$/;"	f	class:InputUnit
+get_inputUnit_ref	Router.hh	/^    std::vector<InputUnit *>& get_inputUnit_ref()   { return m_input_unit; }$/;"	f	class:Router
+get_input_arbiter_activity	SwitchAllocator.hh	/^    get_input_arbiter_activity()$/;"	f	class:SwitchAllocator
+get_max_credit_count	OutVcState.hh	/^    int get_max_credit_count()      { return m_max_credit_count; }$/;"	f	class:OutVcState
+get_msg_ptr	flit.hh	/^    MsgPtr& get_msg_ptr() { return m_msg_ptr; }$/;"	f	class:flit
+get_net_ptr	Router.hh	/^    GarnetNetwork* get_net_ptr()                    { return m_network_ptr; }$/;"	f	class:Router
+get_num_inports	Router.hh	/^    int get_num_inports()   { return m_input_unit.size(); }$/;"	f	class:Router
+get_num_outports	Router.hh	/^    int get_num_outports()  { return m_output_unit.size(); }$/;"	f	class:Router
+get_num_vcs	Router.hh	/^    int get_num_vcs()       { return m_num_vcs; }$/;"	f	class:Router
+get_num_vnets	Router.hh	/^    int get_num_vnets()     { return m_virtual_networks; }$/;"	f	class:Router
+get_outlink_id	OutputUnit.hh	/^    get_outlink_id()$/;"	f	class:OutputUnit
+get_outport	InputUnit.hh	/^    get_outport(int invc)$/;"	f	class:InputUnit
+get_outport	VirtualChannel.hh	/^    inline int get_outport()                  { return m_output_port; }$/;"	f	class:VirtualChannel
+get_outport	flit.hh	/^    int get_outport() {return m_outport; }$/;"	f	class:flit
+get_outputUnit_ref	Router.hh	/^    std::vector<OutputUnit *>& get_outputUnit_ref() { return m_output_unit; }$/;"	f	class:Router
+get_output_arbiter_activity	SwitchAllocator.hh	/^    get_output_arbiter_activity()$/;"	f	class:SwitchAllocator
+get_outvc	InputUnit.hh	/^    get_outvc(int invc)$/;"	f	class:InputUnit
+get_outvc	VirtualChannel.hh	/^    inline int get_outvc()                  { return m_output_vc; }$/;"	f	class:VirtualChannel
+get_pipe_stages	Router.hh	/^    Cycles get_pipe_stages(){ return m_latency; }$/;"	f	class:Router
+get_route	flit.hh	/^    RouteInfo get_route() { return m_route; }$/;"	f	class:flit
+get_router_id	GarnetNetwork.cc	/^GarnetNetwork::get_router_id(int ni)$/;"	f	class:GarnetNetwork
+get_router_id	NetworkInterface.hh	/^    int get_router_id() { return m_router_id; }$/;"	f	class:NetworkInterface
+get_size	flit.hh	/^    int get_size() { return m_size; }$/;"	f	class:flit
+get_src_delay	flit.hh	/^    Cycles get_src_delay() { return src_delay; }$/;"	f	class:flit
+get_stage	flit.hh	/^    std::pair<flit_stage, Cycles> get_stage() { return m_stage; }$/;"	f	class:flit
+get_state	VirtualChannel.hh	/^    inline VC_state_type get_state()        { return m_vc_state.first; }$/;"	f	class:VirtualChannel
+get_time	flit.hh	/^    Cycles get_time() { return m_time; }$/;"	f	class:flit
+get_type	flit.hh	/^    flit_type get_type() { return m_type; }$/;"	f	class:flit
+get_vc	flit.hh	/^    int get_vc() { return m_vc; }$/;"	f	class:flit
+get_vc_per_vnet	Router.hh	/^    int get_vc_per_vnet()   { return m_vc_per_vnet; }$/;"	f	class:Router
+get_vc_size	InputUnit.hh	/^    get_vc_size(int vc) {$/;"	f	class:InputUnit
+get_vnet	NetworkInterface.cc	/^NetworkInterface::get_vnet(int vc)$/;"	f	class:NetworkInterface
+get_vnet	SwitchAllocator.cc	/^SwitchAllocator::get_vnet(int invc)$/;"	f	class:SwitchAllocator
+get_vnet	flit.hh	/^    int get_vnet() { return m_vnet; }$/;"	f	class:flit
+get_vnet_type	GarnetNetwork.hh	/^    get_vnet_type(int vc)$/;"	f	class:GarnetNetwork
+grant_outport	InputUnit.hh	/^    grant_outport(int vc, int outport)$/;"	f	class:InputUnit
+grant_outvc	InputUnit.hh	/^    grant_outvc(int vc, int outvc)$/;"	f	class:InputUnit
+grant_switch	Router.cc	/^Router::grant_switch(int inport, flit *t_flit)$/;"	f	class:Router
+greater	flit.hh	/^    greater(flit* n1, flit* n2)$/;"	f	class:flit
+has_credit	OutVcState.hh	/^    inline bool has_credit()       { return (m_credit_count > 0); }$/;"	f	class:OutVcState
+has_credit	OutputUnit.cc	/^OutputUnit::has_credit(int out_vc)$/;"	f	class:OutputUnit
+has_free_vc	OutputUnit.cc	/^OutputUnit::has_free_vc(int vnet)$/;"	f	class:OutputUnit
+hops_traversed	CommonTypes.hh	/^    int hops_traversed;$/;"	m	struct:RouteInfo
+id	GarnetNetwork.py	/^    id = Param.UInt32("ID in relation to other network interfaces")$/;"	v	class:GarnetNetworkInterface
+inCreditLink	NetworkInterface.hh	/^    CreditLink *inCreditLink;$/;"	m	class:NetworkInterface
+inNetLink	NetworkInterface.hh	/^    NetworkLink *inNetLink;$/;"	m	class:NetworkInterface
+inNode_ptr	NetworkInterface.hh	/^    std::vector<MessageBuffer *> inNode_ptr;$/;"	m	class:NetworkInterface
+increment_credit	InputUnit.cc	/^InputUnit::increment_credit(int in_vc, bool free_signal, Cycles curTime)$/;"	f	class:InputUnit
+increment_credit	OutVcState.cc	/^OutVcState::increment_credit()$/;"	f	class:OutVcState
+increment_credit	OutputUnit.cc	/^OutputUnit::increment_credit(int out_vc)$/;"	f	class:OutputUnit
+increment_flit_network_latency	GarnetNetwork.hh	/^    increment_flit_network_latency(Cycles latency, int vnet)$/;"	f	class:GarnetNetwork
+increment_flit_queueing_latency	GarnetNetwork.hh	/^    increment_flit_queueing_latency(Cycles latency, int vnet)$/;"	f	class:GarnetNetwork
+increment_hops	flit.hh	/^    void increment_hops() { m_route.hops_traversed++; }$/;"	f	class:flit
+increment_injected_flits	GarnetNetwork.hh	/^    void increment_injected_flits(int vnet) { m_flits_injected[vnet]++; }$/;"	f	class:GarnetNetwork
+increment_injected_packets	GarnetNetwork.hh	/^    void increment_injected_packets(int vnet) { m_packets_injected[vnet]++; }$/;"	f	class:GarnetNetwork
+increment_packet_network_latency	GarnetNetwork.hh	/^    increment_packet_network_latency(Cycles latency, int vnet)$/;"	f	class:GarnetNetwork
+increment_packet_queueing_latency	GarnetNetwork.hh	/^    increment_packet_queueing_latency(Cycles latency, int vnet)$/;"	f	class:GarnetNetwork
+increment_received_flits	GarnetNetwork.hh	/^    void increment_received_flits(int vnet) { m_flits_received[vnet]++; }$/;"	f	class:GarnetNetwork
+increment_received_packets	GarnetNetwork.hh	/^    void increment_received_packets(int vnet) { m_packets_received[vnet]++; }$/;"	f	class:GarnetNetwork
+increment_total_hops	GarnetNetwork.hh	/^    increment_total_hops(int hops)$/;"	f	class:GarnetNetwork
+init	CrossbarSwitch.cc	/^CrossbarSwitch::init()$/;"	f	class:CrossbarSwitch
+init	GarnetLink.cc	/^GarnetExtLink::init()$/;"	f	class:GarnetExtLink
+init	GarnetLink.cc	/^GarnetIntLink::init()$/;"	f	class:GarnetIntLink
+init	GarnetNetwork.cc	/^GarnetNetwork::init()$/;"	f	class:GarnetNetwork
+init	NetworkInterface.cc	/^NetworkInterface::init()$/;"	f	class:NetworkInterface
+init	Router.cc	/^Router::init()$/;"	f	class:Router
+init	SwitchAllocator.cc	/^SwitchAllocator::init()$/;"	f	class:SwitchAllocator
+init_net_ptr	NetworkInterface.hh	/^    void init_net_ptr(GarnetNetwork *net_ptr) { m_net_ptr = net_ptr; }$/;"	f	class:NetworkInterface
+init_net_ptr	Router.hh	/^    void init_net_ptr(GarnetNetwork* net_ptr)$/;"	f	class:Router
+insert	flitBuffer.hh	/^    insert(flit *flt)$/;"	f	class:flitBuffer
+insertFlit	VirtualChannel.hh	/^    insertFlit(flit *t_flit)$/;"	f	class:VirtualChannel
+insert_flit	OutputUnit.hh	/^    insert_flit(flit *t_flit)$/;"	f	class:OutputUnit
+intel_swap	InputUnit.hh	/^    intel_swap(int vc)$/;"	f	class:InputUnit
+intel_swap	VirtualChannel.hh	/^    intel_swap()$/;"	f	class:VirtualChannel
+intel_swap	flitBuffer.cc	/^flitBuffer::intel_swap()$/;"	f	class:flitBuffer
+intraswap_threshold	GarnetNetwork.py	/^    intraswap_threshold = Param.UInt32(100, "To enable the intraswap threshold"); # default value os 100  $/;"	v	class:GarnetNetwork
+intraswap_threshold	GarnetNetwork.py	/^    intraswap_threshold = Param.UInt32(Parent.intraswap_threshold,$/;"	v	class:GarnetNetworkInterface
+intraswap_threshold	GarnetNetwork.py	/^    intraswap_threshold = Param.UInt32(Parent.intraswap_threshold,$/;"	v	class:GarnetRouter
+isEmpty	flitBuffer.cc	/^flitBuffer::isEmpty()$/;"	f	class:flitBuffer
+isEnableIntraswap	GarnetNetwork.hh	/^    bool isEnableIntraswap() const { return m_enable_intraswap; }$/;"	f	class:GarnetNetwork
+isEnableWormhole	GarnetNetwork.hh	/^    bool isEnableWormhole() const { return m_enable_wormhole; }$/;"	f	class:GarnetNetwork
+isFaultModelEnabled	GarnetNetwork.hh	/^    bool isFaultModelEnabled() const { return m_enable_fault_model; }$/;"	f	class:GarnetNetwork
+isFull	VirtualChannel.hh	/^    isFull()$/;"	f	class:VirtualChannel
+isFull	flitBuffer.cc	/^flitBuffer::isFull()$/;"	f	class:flitBuffer
+isInState	OutVcState.hh	/^    isInState(VC_state_type state, Cycles request_time)$/;"	f	class:OutVcState
+isReady	InputUnit.hh	/^    isReady(int invc, Cycles curTime)$/;"	f	class:InputUnit
+isReady	NetworkLink.hh	/^    inline bool isReady(Cycles curTime)$/;"	f	class:NetworkLink
+isReady	VirtualChannel.hh	/^    inline bool isReady(Cycles curTime)$/;"	f	class:VirtualChannel
+isReady	flitBuffer.cc	/^flitBuffer::isReady(Cycles curTime)$/;"	f	class:flitBuffer
+isThreshold	VirtualChannel.hh	/^    isThreshold(int threshold)$/;"	f	class:VirtualChannel
+isThreshold	flitBuffer.cc	/^flitBuffer::isThreshold(int threshold)$/;"	f	class:flitBuffer
+isVNetOrdered	GarnetNetwork.hh	/^    bool isVNetOrdered(int vnet) const { return m_ordered[vnet]; }$/;"	f	class:GarnetNetwork
+is_free_signal	Credit.hh	/^    bool is_free_signal() { return m_is_free_signal; }$/;"	f	class:Credit
+is_stage	flit.hh	/^    is_stage(flit_stage stage, Cycles time)$/;"	f	class:flit
+is_vc_idle	OutputUnit.hh	/^    is_vc_idle(int vc, Cycles curTime)$/;"	f	class:OutputUnit
+linkBuffer	NetworkLink.hh	/^    flitBuffer *linkBuffer;$/;"	m	class:NetworkLink
+link_consumer	NetworkLink.hh	/^    Consumer *link_consumer;$/;"	m	class:NetworkLink
+link_id	GarnetLink.py	/^    link_id = Param.Int(Parent.link_id, "link id")$/;"	v	class:NetworkLink
+link_latency	GarnetLink.py	/^    link_latency = Param.Cycles(Parent.latency, "link latency")$/;"	v	class:NetworkLink
+link_srcQueue	NetworkLink.hh	/^    flitBuffer *link_srcQueue;$/;"	m	class:NetworkLink
+link_type	CommonTypes.hh	/^enum link_type { EXT_IN_, EXT_OUT_, INT_, NUM_LINK_TYPES_ };$/;"	g
+lookupRoutingTable	RoutingUnit.cc	/^RoutingUnit::lookupRoutingTable(int vnet, NetDest msg_destination)$/;"	f	class:RoutingUnit
+m_average_link_utilization	GarnetNetwork.hh	/^    Stats::Scalar m_average_link_utilization;$/;"	m	class:GarnetNetwork
+m_average_vc_load	GarnetNetwork.hh	/^    Stats::Vector m_average_vc_load;$/;"	m	class:GarnetNetwork
+m_avg_flit_latency	GarnetNetwork.hh	/^    Stats::Formula m_avg_flit_latency;$/;"	m	class:GarnetNetwork
+m_avg_flit_network_latency	GarnetNetwork.hh	/^    Stats::Formula m_avg_flit_network_latency;$/;"	m	class:GarnetNetwork
+m_avg_flit_queueing_latency	GarnetNetwork.hh	/^    Stats::Formula m_avg_flit_queueing_latency;$/;"	m	class:GarnetNetwork
+m_avg_flit_vnet_latency	GarnetNetwork.hh	/^    Stats::Formula m_avg_flit_vnet_latency;$/;"	m	class:GarnetNetwork
+m_avg_flit_vqueue_latency	GarnetNetwork.hh	/^    Stats::Formula m_avg_flit_vqueue_latency;$/;"	m	class:GarnetNetwork
+m_avg_hops	GarnetNetwork.hh	/^    Stats::Formula m_avg_hops;$/;"	m	class:GarnetNetwork
+m_avg_packet_latency	GarnetNetwork.hh	/^    Stats::Formula m_avg_packet_latency;$/;"	m	class:GarnetNetwork
+m_avg_packet_network_latency	GarnetNetwork.hh	/^    Stats::Formula m_avg_packet_network_latency;$/;"	m	class:GarnetNetwork
+m_avg_packet_queueing_latency	GarnetNetwork.hh	/^    Stats::Formula m_avg_packet_queueing_latency;$/;"	m	class:GarnetNetwork
+m_avg_packet_vnet_latency	GarnetNetwork.hh	/^    Stats::Formula m_avg_packet_vnet_latency;$/;"	m	class:GarnetNetwork
+m_avg_packet_vqueue_latency	GarnetNetwork.hh	/^    Stats::Formula m_avg_packet_vqueue_latency;$/;"	m	class:GarnetNetwork
+m_buffer	flitBuffer.hh	/^    std::vector<flit *> m_buffer;$/;"	m	class:flitBuffer
+m_buffer_reads	Router.hh	/^    Stats::Scalar m_buffer_reads;$/;"	m	class:Router
+m_buffer_writes	Router.hh	/^    Stats::Scalar m_buffer_writes;$/;"	m	class:Router
+m_buffers_per_ctrl_vc	GarnetNetwork.hh	/^    uint32_t m_buffers_per_ctrl_vc;$/;"	m	class:GarnetNetwork
+m_buffers_per_data_vc	GarnetNetwork.hh	/^    uint32_t m_buffers_per_data_vc;$/;"	m	class:GarnetNetwork
+m_credit_count	OutVcState.hh	/^    int m_credit_count;$/;"	m	class:OutVcState
+m_credit_link	GarnetLink.hh	/^    CreditLink* m_credit_link;$/;"	m	class:GarnetIntLink
+m_credit_link	InputUnit.hh	/^    CreditLink *m_credit_link;$/;"	m	class:InputUnit
+m_credit_link	OutputUnit.hh	/^    CreditLink *m_credit_link;$/;"	m	class:OutputUnit
+m_credit_links	GarnetLink.hh	/^    CreditLink* m_credit_links[2];$/;"	m	class:GarnetExtLink
+m_creditlinks	GarnetNetwork.hh	/^    std::vector<CreditLink *> m_creditlinks; \/\/ All credit links in the network$/;"	m	class:GarnetNetwork
+m_crossbar_activity	CrossbarSwitch.hh	/^    double m_crossbar_activity;$/;"	m	class:CrossbarSwitch
+m_crossbar_activity	Router.hh	/^    Stats::Scalar m_crossbar_activity;$/;"	m	class:Router
+m_direction	InputUnit.hh	/^    PortDirection m_direction;$/;"	m	class:InputUnit
+m_direction	OutputUnit.hh	/^    PortDirection m_direction;$/;"	m	class:OutputUnit
+m_enable_fault_model	GarnetNetwork.hh	/^    bool m_enable_fault_model;$/;"	m	class:GarnetNetwork
+m_enable_intraswap	GarnetNetwork.hh	/^    uint32_t m_enable_intraswap;$/;"	m	class:GarnetNetwork
+m_enable_wormhole	GarnetNetwork.hh	/^    bool m_enable_wormhole;$/;"	m	class:GarnetNetwork
+m_enqueue_time	VirtualChannel.hh	/^    Cycles m_enqueue_time;$/;"	m	class:VirtualChannel
+m_enqueue_time	flit.hh	/^    Cycles m_enqueue_time, m_time;$/;"	m	class:flit
+m_flit_network_latency	GarnetNetwork.hh	/^    Stats::Vector m_flit_network_latency;$/;"	m	class:GarnetNetwork
+m_flit_queueing_latency	GarnetNetwork.hh	/^    Stats::Vector m_flit_queueing_latency;$/;"	m	class:GarnetNetwork
+m_flits_injected	GarnetNetwork.hh	/^    Stats::Vector m_flits_injected;$/;"	m	class:GarnetNetwork
+m_flits_received	GarnetNetwork.hh	/^    Stats::Vector m_flits_received;$/;"	m	class:GarnetNetwork
+m_id	InputUnit.hh	/^    int m_id;$/;"	m	class:InputUnit
+m_id	NetworkInterface.hh	/^    const NodeID m_id;$/;"	m	class:NetworkInterface
+m_id	NetworkLink.hh	/^    const int m_id;$/;"	m	class:NetworkLink
+m_id	OutVcState.hh	/^    int m_id ;$/;"	m	class:OutVcState
+m_id	OutputUnit.hh	/^    int m_id;$/;"	m	class:OutputUnit
+m_id	VirtualChannel.hh	/^    int m_id;$/;"	m	class:VirtualChannel
+m_id	flit.hh	/^    int m_id;$/;"	m	class:flit
+m_in_link	InputUnit.hh	/^    NetworkLink *m_in_link;$/;"	m	class:InputUnit
+m_inports_dirn2idx	RoutingUnit.hh	/^    std::map<PortDirection, int> m_inports_dirn2idx;$/;"	m	class:RoutingUnit
+m_inports_idx2dirn	RoutingUnit.hh	/^    std::map<int, PortDirection> m_inports_idx2dirn;$/;"	m	class:RoutingUnit
+m_input_arbiter_activity	SwitchAllocator.hh	/^    double m_input_arbiter_activity, m_output_arbiter_activity;$/;"	m	class:SwitchAllocator
+m_input_buffer	VirtualChannel.hh	/^    flitBuffer *m_input_buffer;$/;"	m	class:VirtualChannel
+m_input_unit	Router.hh	/^    std::vector<InputUnit *> m_input_unit;$/;"	m	class:Router
+m_input_unit	SwitchAllocator.hh	/^    std::vector<InputUnit *> m_input_unit;$/;"	m	class:SwitchAllocator
+m_is_free_signal	Credit.hh	/^    bool m_is_free_signal;$/;"	m	class:Credit
+m_latency	NetworkLink.hh	/^    const Cycles m_latency;$/;"	m	class:NetworkLink
+m_latency	Router.hh	/^    Cycles m_latency;$/;"	m	class:Router
+m_link_utilized	NetworkLink.hh	/^    unsigned int m_link_utilized;$/;"	m	class:NetworkLink
+m_max_credit_count	OutVcState.hh	/^    int m_max_credit_count;$/;"	m	class:OutVcState
+m_msg_ptr	flit.hh	/^    MsgPtr m_msg_ptr;$/;"	m	class:flit
+m_net_ptr	NetworkInterface.hh	/^    GarnetNetwork *m_net_ptr;$/;"	m	class:NetworkInterface
+m_network_link	GarnetLink.hh	/^    NetworkLink* m_network_link;$/;"	m	class:GarnetIntLink
+m_network_links	GarnetLink.hh	/^    NetworkLink* m_network_links[2];$/;"	m	class:GarnetExtLink
+m_network_ptr	Router.hh	/^    GarnetNetwork *m_network_ptr;$/;"	m	class:Router
+m_networklinks	GarnetNetwork.hh	/^    std::vector<NetworkLink *> m_networklinks; \/\/ All flit links in the network$/;"	m	class:GarnetNetwork
+m_ni_flit_size	GarnetNetwork.hh	/^    uint32_t m_ni_flit_size;$/;"	m	class:GarnetNetwork
+m_ni_out_vcs	NetworkInterface.hh	/^    std::vector<flitBuffer *>  m_ni_out_vcs;$/;"	m	class:NetworkInterface
+m_ni_out_vcs_enqueue_time	NetworkInterface.hh	/^    std::vector<Cycles> m_ni_out_vcs_enqueue_time;$/;"	m	class:NetworkInterface
+m_nis	GarnetNetwork.hh	/^    std::vector<NetworkInterface *> m_nis;   \/\/ All NI's in Network$/;"	m	class:GarnetNetwork
+m_num_buffer_reads	InputUnit.hh	/^    std::vector<double> m_num_buffer_reads;$/;"	m	class:InputUnit
+m_num_buffer_writes	InputUnit.hh	/^    std::vector<double> m_num_buffer_writes;$/;"	m	class:InputUnit
+m_num_cols	GarnetNetwork.hh	/^    int m_num_cols;$/;"	m	class:GarnetNetwork
+m_num_inports	CrossbarSwitch.hh	/^    int m_num_inports;$/;"	m	class:CrossbarSwitch
+m_num_inports	SwitchAllocator.hh	/^    int m_num_inports, m_num_outports;$/;"	m	class:SwitchAllocator
+m_num_outports	SwitchAllocator.hh	/^    int m_num_inports, m_num_outports;$/;"	m	class:SwitchAllocator
+m_num_rows	GarnetNetwork.hh	/^    int m_num_rows;$/;"	m	class:GarnetNetwork
+m_num_vcs	CrossbarSwitch.hh	/^    int m_num_vcs;$/;"	m	class:CrossbarSwitch
+m_num_vcs	InputUnit.hh	/^    int m_num_vcs;$/;"	m	class:InputUnit
+m_num_vcs	NetworkInterface.hh	/^    const int m_virtual_networks, m_vc_per_vnet, m_num_vcs;$/;"	m	class:NetworkInterface
+m_num_vcs	OutputUnit.hh	/^    int m_num_vcs;$/;"	m	class:OutputUnit
+m_num_vcs	Router.hh	/^    int m_virtual_networks, m_num_vcs, m_vc_per_vnet;$/;"	m	class:Router
+m_num_vcs	SwitchAllocator.hh	/^    int m_num_vcs, m_vc_per_vnet;$/;"	m	class:SwitchAllocator
+m_out_buffer	OutputUnit.hh	/^    flitBuffer *m_out_buffer; \/\/ This is for the network link to consume$/;"	m	class:OutputUnit
+m_out_link	OutputUnit.hh	/^    NetworkLink *m_out_link;$/;"	m	class:OutputUnit
+m_out_vc_state	NetworkInterface.hh	/^    std::vector<OutVcState *> m_out_vc_state;$/;"	m	class:NetworkInterface
+m_outport	flit.hh	/^    int m_outport;$/;"	m	class:flit
+m_outports_dirn2idx	RoutingUnit.hh	/^    std::map<PortDirection, int> m_outports_dirn2idx;$/;"	m	class:RoutingUnit
+m_outports_idx2dirn	RoutingUnit.hh	/^    std::map<int, PortDirection> m_outports_idx2dirn;$/;"	m	class:RoutingUnit
+m_output_arbiter_activity	SwitchAllocator.hh	/^    double m_input_arbiter_activity, m_output_arbiter_activity;$/;"	m	class:SwitchAllocator
+m_output_port	VirtualChannel.hh	/^    int m_output_port;$/;"	m	class:VirtualChannel
+m_output_unit	CrossbarSwitch.hh	/^    std::vector<OutputUnit *> m_output_unit;$/;"	m	class:CrossbarSwitch
+m_output_unit	Router.hh	/^    std::vector<OutputUnit *> m_output_unit;$/;"	m	class:Router
+m_output_unit	SwitchAllocator.hh	/^    std::vector<OutputUnit *> m_output_unit;$/;"	m	class:SwitchAllocator
+m_output_vc	VirtualChannel.hh	/^    int m_output_vc;$/;"	m	class:VirtualChannel
+m_outvc_state	OutputUnit.hh	/^    std::vector<OutVcState *> m_outvc_state; \/\/ vc state of downstream router$/;"	m	class:OutputUnit
+m_packet_network_latency	GarnetNetwork.hh	/^    Stats::Vector m_packet_network_latency;$/;"	m	class:GarnetNetwork
+m_packet_queueing_latency	GarnetNetwork.hh	/^    Stats::Vector m_packet_queueing_latency;$/;"	m	class:GarnetNetwork
+m_packets_injected	GarnetNetwork.hh	/^    Stats::Vector m_packets_injected;$/;"	m	class:GarnetNetwork
+m_packets_received	GarnetNetwork.hh	/^    Stats::Vector m_packets_received;$/;"	m	class:GarnetNetwork
+m_port_requests	SwitchAllocator.hh	/^    std::vector<std::vector<bool>> m_port_requests;$/;"	m	class:SwitchAllocator
+m_round_robin_inport	SwitchAllocator.hh	/^    std::vector<int> m_round_robin_inport;$/;"	m	class:SwitchAllocator
+m_round_robin_invc	SwitchAllocator.hh	/^    std::vector<int> m_round_robin_invc;$/;"	m	class:SwitchAllocator
+m_route	flit.hh	/^    RouteInfo m_route;$/;"	m	class:flit
+m_router	CrossbarSwitch.hh	/^    Router *m_router;$/;"	m	class:CrossbarSwitch
+m_router	InputUnit.hh	/^    Router *m_router;$/;"	m	class:InputUnit
+m_router	OutputUnit.hh	/^    Router *m_router;$/;"	m	class:OutputUnit
+m_router	RoutingUnit.hh	/^    Router *m_router;$/;"	m	class:RoutingUnit
+m_router	SwitchAllocator.hh	/^    Router *m_router;$/;"	m	class:SwitchAllocator
+m_router_id	NetworkInterface.hh	/^    int m_router_id; \/\/ id of my router$/;"	m	class:NetworkInterface
+m_routers	GarnetNetwork.hh	/^    std::vector<Router *> m_routers;   \/\/ All Routers in Network$/;"	m	class:GarnetNetwork
+m_routing_algorithm	GarnetNetwork.hh	/^    int m_routing_algorithm;$/;"	m	class:GarnetNetwork
+m_routing_table	RoutingUnit.hh	/^    std::vector<NetDest> m_routing_table;$/;"	m	class:RoutingUnit
+m_routing_unit	Router.hh	/^    RoutingUnit *m_routing_unit;$/;"	m	class:Router
+m_size	flit.hh	/^    int m_size;$/;"	m	class:flit
+m_stage	flit.hh	/^    std::pair<flit_stage, Cycles> m_stage;$/;"	m	class:flit
+m_sw_alloc	Router.hh	/^    SwitchAllocator *m_sw_alloc;$/;"	m	class:Router
+m_sw_input_arbiter_activity	Router.hh	/^    Stats::Scalar m_sw_input_arbiter_activity;$/;"	m	class:Router
+m_sw_output_arbiter_activity	Router.hh	/^    Stats::Scalar m_sw_output_arbiter_activity;$/;"	m	class:Router
+m_switch	Router.hh	/^    CrossbarSwitch *m_switch;$/;"	m	class:Router
+m_switch_buffer	CrossbarSwitch.hh	/^    std::vector<flitBuffer *> m_switch_buffer;$/;"	m	class:CrossbarSwitch
+m_threshold	GarnetNetwork.hh	/^    uint32_t m_threshold;$/;"	m	class:GarnetNetwork
+m_time	OutVcState.hh	/^    Cycles m_time;$/;"	m	class:OutVcState
+m_time	flit.hh	/^    Cycles m_enqueue_time, m_time;$/;"	m	class:flit
+m_total_ext_in_link_utilization	GarnetNetwork.hh	/^    Stats::Scalar m_total_ext_in_link_utilization;$/;"	m	class:GarnetNetwork
+m_total_ext_out_link_utilization	GarnetNetwork.hh	/^    Stats::Scalar m_total_ext_out_link_utilization;$/;"	m	class:GarnetNetwork
+m_total_hops	GarnetNetwork.hh	/^    Stats::Scalar  m_total_hops;$/;"	m	class:GarnetNetwork
+m_total_int_link_utilization	GarnetNetwork.hh	/^    Stats::Scalar m_total_int_link_utilization;$/;"	m	class:GarnetNetwork
+m_type	NetworkLink.hh	/^    link_type m_type;$/;"	m	class:NetworkLink
+m_type	flit.hh	/^    flit_type m_type;$/;"	m	class:flit
+m_vc	flit.hh	/^    int m_vc;$/;"	m	class:flit
+m_vc_allocator	NetworkInterface.hh	/^    std::vector<int> m_vc_allocator;$/;"	m	class:NetworkInterface
+m_vc_load	NetworkLink.hh	/^    std::vector<unsigned int> m_vc_load;$/;"	m	class:NetworkLink
+m_vc_per_vnet	InputUnit.hh	/^    int m_vc_per_vnet;$/;"	m	class:InputUnit
+m_vc_per_vnet	NetworkInterface.hh	/^    const int m_virtual_networks, m_vc_per_vnet, m_num_vcs;$/;"	m	class:NetworkInterface
+m_vc_per_vnet	OutputUnit.hh	/^    int m_vc_per_vnet;$/;"	m	class:OutputUnit
+m_vc_per_vnet	Router.hh	/^    int m_virtual_networks, m_num_vcs, m_vc_per_vnet;$/;"	m	class:Router
+m_vc_per_vnet	SwitchAllocator.hh	/^    int m_num_vcs, m_vc_per_vnet;$/;"	m	class:SwitchAllocator
+m_vc_round_robin	NetworkInterface.hh	/^    int m_vc_round_robin; \/\/ For round robin scheduling$/;"	m	class:NetworkInterface
+m_vc_state	OutVcState.hh	/^    VC_state_type m_vc_state;$/;"	m	class:OutVcState
+m_vc_state	VirtualChannel.hh	/^    std::pair<VC_state_type, Cycles> m_vc_state;$/;"	m	class:VirtualChannel
+m_vc_winners	SwitchAllocator.hh	/^    std::vector<std::vector<int>> m_vc_winners; \/\/ a list for each outport$/;"	m	class:SwitchAllocator
+m_vcs	InputUnit.hh	/^    std::vector<VirtualChannel *> m_vcs;$/;"	m	class:InputUnit
+m_vcs_per_vnet	GarnetNetwork.hh	/^    uint32_t m_vcs_per_vnet;$/;"	m	class:GarnetNetwork
+m_virtual_networks	NetworkInterface.hh	/^    const int m_virtual_networks, m_vc_per_vnet, m_num_vcs;$/;"	m	class:NetworkInterface
+m_virtual_networks	Router.hh	/^    int m_virtual_networks, m_num_vcs, m_vc_per_vnet;$/;"	m	class:Router
+m_vnet	flit.hh	/^    int m_vnet;$/;"	m	class:flit
+m_vnet_type	GarnetNetwork.hh	/^    std::vector<VNET_type > m_vnet_type;$/;"	m	class:GarnetNetwork
+m_weight_table	RoutingUnit.hh	/^    std::vector<int> m_weight_table;$/;"	m	class:RoutingUnit
+makeExtInLink	GarnetNetwork.cc	/^GarnetNetwork::makeExtInLink(NodeID src, SwitchID dest, BasicLink* link,$/;"	f	class:GarnetNetwork
+makeExtOutLink	GarnetNetwork.cc	/^GarnetNetwork::makeExtOutLink(SwitchID src, NodeID dest, BasicLink* link,$/;"	f	class:GarnetNetwork
+makeInternalLink	GarnetNetwork.cc	/^GarnetNetwork::makeInternalLink(SwitchID src, SwitchID dest, BasicLink* link,$/;"	f	class:GarnetNetwork
+max_size	flitBuffer.hh	/^    int max_size;$/;"	m	class:flitBuffer
+need_stage	InputUnit.hh	/^    need_stage(int vc, flit_stage stage, Cycles time)$/;"	f	class:InputUnit
+need_stage	VirtualChannel.cc	/^VirtualChannel::need_stage(flit_stage stage, Cycles time)$/;"	f	class:VirtualChannel
+net_dest	CommonTypes.hh	/^    NetDest net_dest;$/;"	m	struct:RouteInfo
+network_link	GarnetLink.py	/^    network_link = Param.NetworkLink(NetworkLink(), "forward link")$/;"	v	class:GarnetIntLink
+network_links	GarnetLink.py	/^    network_links = VectorParam.NetworkLink(_nls, "forward links")$/;"	v	class:GarnetExtLink
+ni_flit_size	GarnetNetwork.py	/^    ni_flit_size = Param.UInt32(16, "network interface flit size in bytes")$/;"	v	class:GarnetNetwork
+num_rows	GarnetNetwork.py	/^    num_rows = Param.Int(0, "number of rows if 2D (mesh\/torus\/..) topology");$/;"	v	class:GarnetNetwork
+operator <<	GarnetLink.hh	/^operator<<(std::ostream& out, const GarnetExtLink& obj)$/;"	f
+operator <<	GarnetLink.hh	/^operator<<(std::ostream& out, const GarnetIntLink& obj)$/;"	f
+operator <<	GarnetNetwork.hh	/^operator<<(std::ostream& out, const GarnetNetwork& obj)$/;"	f
+operator <<	flit.hh	/^operator<<(std::ostream& out, const flit& obj)$/;"	f
+operator <<	flitBuffer.hh	/^operator<<(std::ostream& out, const flitBuffer& obj)$/;"	f
+outCreditLink	NetworkInterface.hh	/^    CreditLink *outCreditLink;$/;"	m	class:NetworkInterface
+outCreditQueue	NetworkInterface.hh	/^    flitBuffer *outCreditQueue;$/;"	m	class:NetworkInterface
+outFlitQueue	NetworkInterface.hh	/^    flitBuffer *outFlitQueue; \/\/ For modeling link contention$/;"	m	class:NetworkInterface
+outNetLink	NetworkInterface.hh	/^    NetworkLink *outNetLink;$/;"	m	class:NetworkInterface
+outNode_ptr	NetworkInterface.hh	/^    std::vector<MessageBuffer *> outNode_ptr;$/;"	m	class:NetworkInterface
+outportCompute	RoutingUnit.cc	/^RoutingUnit::outportCompute(RouteInfo route, int inport,$/;"	f	class:RoutingUnit
+outportComputeCustom	RoutingUnit.cc	/^RoutingUnit::outportComputeCustom(RouteInfo route,$/;"	f	class:RoutingUnit
+outportComputeRandom	RoutingUnit.cc	/^RoutingUnit::outportComputeRandom(RouteInfo route,$/;"	f	class:RoutingUnit
+outportComputeXY	RoutingUnit.cc	/^RoutingUnit::outportComputeXY(RouteInfo route,$/;"	f	class:RoutingUnit
+peekLink	NetworkLink.hh	/^    inline flit* peekLink()       { return linkBuffer->peekTopFlit(); }$/;"	f	class:NetworkLink
+peekTopFlit	InputUnit.hh	/^    peekTopFlit(int vc)$/;"	f	class:InputUnit
+peekTopFlit	VirtualChannel.hh	/^    peekTopFlit()$/;"	f	class:VirtualChannel
+peekTopFlit	flitBuffer.hh	/^    peekTopFlit()$/;"	f	class:flitBuffer
+print	CrossbarSwitch.hh	/^    void print(std::ostream& out) const {};$/;"	f	class:CrossbarSwitch
+print	GarnetLink.cc	/^GarnetExtLink::print(std::ostream& out) const$/;"	f	class:GarnetExtLink
+print	GarnetLink.cc	/^GarnetIntLink::print(std::ostream& out) const$/;"	f	class:GarnetIntLink
+print	GarnetNetwork.cc	/^GarnetNetwork::print(ostream& out) const$/;"	f	class:GarnetNetwork
+print	InputUnit.hh	/^    void print(std::ostream& out) const {};$/;"	f	class:InputUnit
+print	NetworkInterface.cc	/^NetworkInterface::print(std::ostream& out) const$/;"	f	class:NetworkInterface
+print	NetworkLink.hh	/^    void print(std::ostream& out) const {}$/;"	f	class:NetworkLink
+print	OutputUnit.hh	/^    void print(std::ostream& out) const {};$/;"	f	class:OutputUnit
+print	Router.hh	/^    void print(std::ostream& out) const {};$/;"	f	class:Router
+print	SwitchAllocator.hh	/^    void print(std::ostream& out) const {};$/;"	f	class:SwitchAllocator
+print	flit.cc	/^flit::print(std::ostream& out) const$/;"	f	class:flit
+print	flitBuffer.cc	/^flitBuffer::print(std::ostream& out) const$/;"	f	class:flitBuffer
+printAggregateFaultProbability	Router.cc	/^Router::printAggregateFaultProbability(std::ostream& out)$/;"	f	class:Router
+printFaultVector	Router.cc	/^Router::printFaultVector(ostream& out)$/;"	f	class:Router
+regStats	GarnetNetwork.cc	/^GarnetNetwork::regStats()$/;"	f	class:GarnetNetwork
+regStats	Router.cc	/^Router::regStats()$/;"	f	class:Router
+resetStats	InputUnit.cc	/^InputUnit::resetStats()$/;"	f	class:InputUnit
+resetStats	Router.cc	/^Router::resetStats()$/;"	f	class:Router
+route_compute	Router.cc	/^Router::route_compute(RouteInfo route, int inport, PortDirection inport_dirn)$/;"	f	class:Router
+routing_algorithm	GarnetNetwork.py	/^    routing_algorithm = Param.Int(0,$/;"	v	class:GarnetNetwork
+scheduleOutputLink	NetworkInterface.cc	/^NetworkInterface::scheduleOutputLink()$/;"	f	class:NetworkInterface
+schedule_wakeup	Router.cc	/^Router::schedule_wakeup(Cycles time)$/;"	f	class:Router
+select_free_vc	OutputUnit.cc	/^OutputUnit::select_free_vc(int vnet)$/;"	f	class:OutputUnit
+send_allowed	SwitchAllocator.cc	/^SwitchAllocator::send_allowed(int inport, int invc, int outport, int outvc)$/;"	f	class:SwitchAllocator
+setLinkConsumer	NetworkLink.cc	/^NetworkLink::setLinkConsumer(Consumer *consumer)$/;"	f	class:NetworkLink
+setMaxSize	flitBuffer.cc	/^flitBuffer::setMaxSize(int maximum)$/;"	f	class:flitBuffer
+setSourceQueue	NetworkLink.cc	/^NetworkLink::setSourceQueue(flitBuffer *srcQueue)$/;"	f	class:NetworkLink
+setState	OutVcState.hh	/^    setState(VC_state_type state, Cycles time)$/;"	f	class:OutVcState
+setType	NetworkLink.hh	/^    void setType(link_type type) { m_type = type; }$/;"	f	class:NetworkLink
+set_active	VirtualChannel.cc	/^VirtualChannel::set_active(Cycles curTime)$/;"	f	class:VirtualChannel
+set_credit_link	InputUnit.hh	/^    set_credit_link(CreditLink *credit_link)$/;"	f	class:InputUnit
+set_credit_link	OutputUnit.cc	/^OutputUnit::set_credit_link(CreditLink *credit_link)$/;"	f	class:OutputUnit
+set_enqueue_time	VirtualChannel.hh	/^    inline void set_enqueue_time(Cycles time) { m_enqueue_time = time; }$/;"	f	class:VirtualChannel
+set_idle	VirtualChannel.cc	/^VirtualChannel::set_idle(Cycles curTime)$/;"	f	class:VirtualChannel
+set_in_link	InputUnit.hh	/^    set_in_link(NetworkLink *link)$/;"	f	class:InputUnit
+set_out_link	OutputUnit.cc	/^OutputUnit::set_out_link(NetworkLink *link)$/;"	f	class:OutputUnit
+set_outport	VirtualChannel.hh	/^    void set_outport(int outport)           { m_output_port = outport; };$/;"	f	class:VirtualChannel
+set_outport	flit.hh	/^    void set_outport(int port) { m_outport = port; }$/;"	f	class:flit
+set_outvc	VirtualChannel.hh	/^    void set_outvc(int outvc)               { m_output_vc = outvc; }$/;"	f	class:VirtualChannel
+set_route	flit.hh	/^    void set_route(RouteInfo route) { m_route = route; }$/;"	f	class:flit
+set_src_delay	flit.hh	/^    void set_src_delay(Cycles delay) { src_delay = delay; }$/;"	f	class:flit
+set_state	VirtualChannel.hh	/^    set_state(VC_state_type m_state, Cycles curTime)$/;"	f	class:VirtualChannel
+set_time	flit.hh	/^    void set_time(Cycles time) { m_time = time; }$/;"	f	class:flit
+set_vc	flit.hh	/^    void set_vc(int vc) { m_vc = vc; }$/;"	f	class:flit
+set_vc_active	InputUnit.hh	/^    set_vc_active(int vc, Cycles curTime)$/;"	f	class:InputUnit
+set_vc_idle	InputUnit.hh	/^    set_vc_idle(int vc, Cycles curTime)$/;"	f	class:InputUnit
+set_vc_state	OutputUnit.hh	/^    set_vc_state(VC_state_type state, int vc, Cycles curTime)$/;"	f	class:OutputUnit
+size	VirtualChannel.hh	/^    size()$/;"	f	class:VirtualChannel
+size	flitBuffer.hh	/^    size()$/;"	f	class:flitBuffer
+sizeLeft	VirtualChannel.hh	/^    sizeLeft()$/;"	f	class:VirtualChannel
+src_delay	flit.hh	/^    Cycles src_delay;$/;"	m	class:flit
+src_ni	CommonTypes.hh	/^    int src_ni;$/;"	m	struct:RouteInfo
+src_router	CommonTypes.hh	/^    int src_router;$/;"	m	struct:RouteInfo
+swap	InputUnit.hh	/^    swap(int vc)$/;"	f	class:InputUnit
+swap	VirtualChannel.hh	/^    swap()$/;"	f	class:VirtualChannel
+swap	flitBuffer.cc	/^flitBuffer::swap()$/;"	f	class:flitBuffer
+threshold	GarnetNetwork.hh	/^    uint32_t threshold() const {return m_threshold; }$/;"	f	class:GarnetNetwork
+type	GarnetLink.py	/^    type = 'CreditLink'$/;"	v	class:CreditLink
+type	GarnetLink.py	/^    type = 'GarnetExtLink'$/;"	v	class:GarnetExtLink
+type	GarnetLink.py	/^    type = 'GarnetIntLink'$/;"	v	class:GarnetIntLink
+type	GarnetLink.py	/^    type = 'NetworkLink'$/;"	v	class:NetworkLink
+type	GarnetNetwork.py	/^    type = 'GarnetNetwork'$/;"	v	class:GarnetNetwork
+type	GarnetNetwork.py	/^    type = 'GarnetNetworkInterface'$/;"	v	class:GarnetNetworkInterface
+type	GarnetNetwork.py	/^    type = 'GarnetRouter'$/;"	v	class:GarnetRouter
+update_sw_winner	CrossbarSwitch.hh	/^    inline void update_sw_winner(int inport, flit *t_flit)$/;"	f	class:CrossbarSwitch
+vc_allocate	SwitchAllocator.cc	/^SwitchAllocator::vc_allocate(int outport, int inport, int invc)$/;"	f	class:SwitchAllocator
+vcs_per_vnet	GarnetLink.py	/^    vcs_per_vnet = Param.Int(Parent.vcs_per_vnet,$/;"	v	class:NetworkLink
+vcs_per_vnet	GarnetNetwork.py	/^    vcs_per_vnet = Param.UInt32(4, "virtual channels per virtual network");$/;"	v	class:GarnetNetwork
+vcs_per_vnet	GarnetNetwork.py	/^    vcs_per_vnet = Param.UInt32(Parent.vcs_per_vnet,$/;"	v	class:GarnetNetworkInterface
+vcs_per_vnet	GarnetNetwork.py	/^    vcs_per_vnet = Param.UInt32(Parent.vcs_per_vnet,$/;"	v	class:GarnetRouter
+virt_nets	GarnetLink.py	/^    virt_nets = Param.Int(Parent.number_of_virtual_networks,$/;"	v	class:NetworkLink
+virt_nets	GarnetNetwork.py	/^    virt_nets = Param.UInt32(Parent.number_of_virtual_networks,$/;"	v	class:GarnetNetworkInterface
+virt_nets	GarnetNetwork.py	/^    virt_nets = Param.UInt32(Parent.number_of_virtual_networks,$/;"	v	class:GarnetRouter
+vnet	CommonTypes.hh	/^    int vnet;$/;"	m	struct:RouteInfo
+wakeup	CrossbarSwitch.cc	/^CrossbarSwitch::wakeup()$/;"	f	class:CrossbarSwitch
+wakeup	InputUnit.cc	/^InputUnit::wakeup()$/;"	f	class:InputUnit
+wakeup	NetworkInterface.cc	/^NetworkInterface::wakeup()$/;"	f	class:NetworkInterface
+wakeup	NetworkLink.cc	/^NetworkLink::wakeup()$/;"	f	class:NetworkLink
+wakeup	OutputUnit.cc	/^OutputUnit::wakeup()$/;"	f	class:OutputUnit
+wakeup	Router.cc	/^Router::wakeup()$/;"	f	class:Router
+wakeup	SwitchAllocator.cc	/^SwitchAllocator::wakeup()$/;"	f	class:SwitchAllocator
+wormhole_buffer_depth	GarnetNetwork.py	/^    wormhole_buffer_depth = Param.UInt32(4, "size of wormhole buffer");$/;"	v	class:GarnetNetwork
+~CrossbarSwitch	CrossbarSwitch.cc	/^CrossbarSwitch::~CrossbarSwitch()$/;"	f	class:CrossbarSwitch
+~GarnetNetwork	GarnetNetwork.cc	/^GarnetNetwork::~GarnetNetwork()$/;"	f	class:GarnetNetwork
+~InputUnit	InputUnit.cc	/^InputUnit::~InputUnit()$/;"	f	class:InputUnit
+~NetworkInterface	NetworkInterface.cc	/^NetworkInterface::~NetworkInterface()$/;"	f	class:NetworkInterface
+~NetworkLink	NetworkLink.cc	/^NetworkLink::~NetworkLink()$/;"	f	class:NetworkLink
+~OutputUnit	OutputUnit.cc	/^OutputUnit::~OutputUnit()$/;"	f	class:OutputUnit
+~Router	Router.cc	/^Router::~Router()$/;"	f	class:Router
+~VirtualChannel	VirtualChannel.cc	/^VirtualChannel::~VirtualChannel()$/;"	f	class:VirtualChannel

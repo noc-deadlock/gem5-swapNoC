@@ -1,0 +1,56 @@
+diff -r 978e95734a22 -r 992c22290554 src/mem/dram_ctrl.cc
+--- a/src/mem/dram_ctrl.cc	Tue Jan 12 17:33:25 2016 -0500
++++ b/src/mem/dram_ctrl.cc	Tue Jan 12 18:29:42 2016 -0500
+@@ -138,14 +138,14 @@
+     uint64_t capacity = ULL(1) << ceilLog2(AbstractMemory::size());
+ 
+     // determine the dram actual capacity from the DRAM config in Mbytes
+-    uint64_t deviceCapacity = deviceSize / (1024 * 1024) * devicesPerRank *
+-        ranksPerChannel;
++    //uint64_t deviceCapacity = deviceSize / (1024 * 1024) * devicesPerRank *
++    //    ranksPerChannel;
+ 
+     // if actual DRAM size does not match memory capacity in system warn!
+-    if (deviceCapacity != capacity / (1024 * 1024))
+-        warn("DRAM device capacity (%d Mbytes) does not match the "
+-             "address range assigned (%d Mbytes)\n", deviceCapacity,
+-             capacity / (1024 * 1024));
++    //if (deviceCapacity != capacity / (1024 * 1024))
++    //    warn("DRAM device capacity (%d Mbytes) does not match the "
++    //         "address range assigned (%d Mbytes)\n", deviceCapacity,
++    //         capacity / (1024 * 1024));
+ 
+     DPRINTF(DRAM, "Memory capacity %lld (%lld) bytes\n", capacity,
+             AbstractMemory::size());
+diff -r 978e95734a22 -r 992c22290554 src/python/m5/SimObject.py
+--- a/src/python/m5/SimObject.py	Tue Jan 12 17:33:25 2016 -0500
++++ b/src/python/m5/SimObject.py	Tue Jan 12 18:29:42 2016 -0500
+@@ -1196,9 +1196,9 @@
+     # Add a new child to this object.
+     def add_child(self, name, child):
+         child = coerceSimObjectOrVector(child)
+-        if child.has_parent():
+-            warn("add_child('%s'): child '%s' already has parent", name,
+-                child.get_name())
++        #if child.has_parent():
++        #    warn("add_child('%s'): child '%s' already has parent", name,
++        #        child.get_name())
+         if self._children.has_key(name):
+             # This code path had an undiscovered bug that would make it fail
+             # at runtime. It had been here for a long time and was only
+diff -r 978e95734a22 -r 992c22290554 src/python/m5/ticks.py
+--- a/src/python/m5/ticks.py	Tue Jan 12 17:33:25 2016 -0500
++++ b/src/python/m5/ticks.py	Tue Jan 12 18:29:42 2016 -0500
+@@ -81,9 +81,9 @@
+ 
+     int_value = int(round(value))
+     err = (value - int_value) / value
+-    if err > frequency_tolerance:
+-        warn("rounding error > tolerance\n    %f rounded to %d", value,
+-            int_value)
++    #if err > frequency_tolerance:
++    #    warn("rounding error > tolerance\n    %f rounded to %d", value,
++    #        int_value)
+     return int_value
+ 
+ __all__ = [ 'setGlobalFrequency', 'fixGlobalFrequency', 'fromSeconds',
